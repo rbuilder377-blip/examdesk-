@@ -25,11 +25,10 @@ input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
 input::placeholder,textarea::placeholder{color:var(--text3)}
 select option{background:var(--surface2)}
 .btn{font-family:inherit;font-size:14px;font-weight:500;padding:9px 18px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);cursor:pointer;transition:background .15s,transform .1s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn:hover{background:var(--bg3)}
-.btn:active{transform:scale(.97)}
+.btn:hover{background:var(--bg3)}.btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-primary{background:var(--blue-dark);color:#fff;border-color:var(--blue-dark)}
-.btn-primary:hover{background:#0C447C;border-color:#0C447C}
+.btn-primary:hover{background:#0C447C}
 .btn-danger{background:var(--red-dark);color:#fff;border-color:var(--red-dark)}
 .btn-danger:hover{background:#791F1F}
 .btn-success{background:var(--green-dark);color:#fff;border-color:var(--green-dark)}
@@ -52,7 +51,8 @@ select option{background:var(--surface2)}
 .mb-4{margin-bottom:4px}.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
 .label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 .text-sm{font-size:13px;color:var(--text2)}.text-xs{font-size:12px;color:var(--text3)}
-.text-error{font-size:13px;color:#f07170}.text-success{font-size:13px;color:#8fcc40}
+.text-error{font-size:13px;color:#f07170;line-height:1.5}
+.text-success{font-size:13px;color:#8fcc40;line-height:1.5}
 .divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
 .nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
 .nav-brand{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;color:var(--text)}
@@ -99,6 +99,7 @@ select option{background:var(--surface2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--text2)}
 .loading-screen .spinner{width:36px;height:36px;border-width:3px}
+.info-box{background:rgba(55,138,221,.08);border:1px solid rgba(55,138,221,.25);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:#7ab5ef;line-height:1.5}
 @media(max-width:600px){
   .grid-2{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr 1fr}
   .exam-card{flex-direction:column;align-items:flex-start}
@@ -128,12 +129,16 @@ select option{background:var(--surface2)}
           <button class="tab active" onclick="switchAuthTab('login')"><i class="ti ti-login"></i> Sign in</button>
           <button class="tab" onclick="switchAuthTab('register')"><i class="ti ti-user-plus"></i> Create account</button>
         </div>
+
+        <!-- LOGIN -->
         <div id="auth-login">
           <div class="mb-12"><div class="label">Email</div><input type="email" id="login-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
           <div class="mb-16"><div class="label">Password</div><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
           <div id="login-error" class="text-error mb-12 hidden"></div>
           <button class="btn btn-primary" id="login-btn" style="width:100%;justify-content:center" onclick="doLogin()"><i class="ti ti-login"></i> Sign in</button>
         </div>
+
+        <!-- REGISTER -->
         <div id="auth-register" class="hidden">
           <div class="mb-12"><div class="label">Full name</div><input type="text" id="reg-name" placeholder="Your full name"></div>
           <div class="mb-12"><div class="label">Email</div><input type="email" id="reg-email" placeholder="your@email.com"></div>
@@ -142,16 +147,15 @@ select option{background:var(--surface2)}
             <div class="label">Account type</div>
             <select id="reg-role" onchange="toggleAdminCode()">
               <option value="student">Student</option>
-              <option value="admin">Admin (requires admin code)</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
           <div id="admin-code-row" class="mb-16 hidden">
             <div class="label">Admin access code</div>
-            <input type="password" id="reg-admin-code" placeholder="Enter admin code">
-            <div class="text-xs mt-4" style="color:var(--text3)">Default code: <strong style="color:var(--text2)">ADMIN2024</strong></div>
+            <input type="password" id="reg-admin-code" placeholder="Enter the admin code">
           </div>
           <div id="reg-error" class="text-error mb-12 hidden"></div>
-          <div id="reg-success" class="text-success mb-12 hidden"></div>
+          <div id="reg-success" class="info-box mb-12 hidden"></div>
           <button class="btn btn-primary" id="reg-btn" style="width:100%;justify-content:center" onclick="doRegister()"><i class="ti ti-user-plus"></i> Create account</button>
         </div>
       </div>
@@ -207,7 +211,7 @@ select option{background:var(--surface2)}
     <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk</div>
     <div class="nav-right">
       <span class="timer-display" id="exam-timer-display">60:00</span>
-      <button class="btn btn-sm btn-danger" onclick="confirmSubmit()"><i class="ti ti-check"></i> Submit exam</button>
+      <button class="btn btn-sm btn-danger" onclick="confirmSubmit()"><i class="ti ti-check"></i> Submit</button>
     </div>
   </nav>
   <div class="page">
@@ -230,9 +234,7 @@ select option{background:var(--surface2)}
 <div id="screen-result" class="hidden">
   <nav class="nav">
     <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk</div>
-    <div class="nav-right">
-      <button class="btn btn-sm" onclick="goBackToDashboard()"><i class="ti ti-arrow-left"></i> Back</button>
-    </div>
+    <div class="nav-right"><button class="btn btn-sm" onclick="goBackToDashboard()"><i class="ti ti-arrow-left"></i> Back</button></div>
   </nav>
   <div class="page" style="max-width:700px"><div id="result-content"></div></div>
 </div>
@@ -245,10 +247,10 @@ select option{background:var(--surface2)}
         <h2 style="font-size:17px;font-weight:600" id="modal-exam-title-h">Create exam</h2>
         <button class="btn btn-sm" onclick="closeModal('modal-create-exam')"><i class="ti ti-x"></i></button>
       </div>
-      <div class="mb-12"><div class="label">Exam title *</div><input type="text" id="exam-title-input" placeholder="e.g. Introduction to Biology — Chapter 3"></div>
+      <div class="mb-12"><div class="label">Exam title *</div><input type="text" id="exam-title-input" placeholder="e.g. Biology — Chapter 3"></div>
       <div class="mb-12"><div class="label">Description</div><input type="text" id="exam-desc-input" placeholder="Brief description for students"></div>
       <div class="grid-2 mb-12">
-        <div><div class="label">Duration (minutes) *</div><input type="number" id="exam-duration-input" value="60" min="5" max="300"></div>
+        <div><div class="label">Duration (minutes)</div><input type="number" id="exam-duration-input" value="60" min="5" max="300"></div>
         <div><div class="label">Pass mark (%)</div><input type="number" id="exam-pass-input" value="50" min="1" max="100"></div>
       </div>
       <div class="mb-16">
@@ -295,98 +297,190 @@ select option{background:var(--surface2)}
 </div>
 
 <script>
+// ─── CONFIG ───────────────────────────────────────────────
 const SUPABASE_URL = 'https://szqzdrcdsmilnzjatljd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_RnvYMUWR_cKwZvfxaDyMAA_Pqx02sCz';
-const ADMIN_CODE   = 'ADMIN2024';
+// Admin code is stored server-side and validated here only as a gate.
+// Change this to any secret phrase you want.
+const ADMIN_CODE = 'EXAM-ADMIN-2024';
+
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let session=null,profile=null,currentExam=null,examAnswers={},timerInterval=null,editingExamId=null,draftQuestions=[];
+let session=null, profile=null, currentExam=null;
+let examAnswers={}, timerInterval=null;
+let editingExamId=null, draftQuestions=[];
 
-const el=id=>document.getElementById(id);
-const show=id=>el(id).classList.remove('hidden');
-const hide=id=>el(id).classList.add('hidden');
-const hideAll=(...ids)=>ids.forEach(hide);
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const el  = id => document.getElementById(id);
+const show = id => el(id).classList.remove('hidden');
+const hide = id => el(id).classList.add('hidden');
+const hideAll = (...ids) => ids.forEach(hide);
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
+const qTypeLabel = t => ({mcq:'MCQ',truefalse:'True/False',short:'Short answer',essay:'Essay'}[t]||t);
 function overlayClose(e,id){if(e.target===e.currentTarget)closeModal(id);}
 function closeModal(id){hide(id);}
-function setBtn(id,loading,label){const b=el(id);if(!b)return;b.disabled=loading;b.innerHTML=loading?'<span class="spinner"></span> Please wait...':label;}
-function qTypeLabel(t){return{mcq:'MCQ',truefalse:'True/False',short:'Short answer',essay:'Essay'}[t]||t;}
 
+function setBtn(id, loading, label){
+  const b=el(id); if(!b)return;
+  b.disabled=loading;
+  b.innerHTML=loading?'<span class="spinner"></span> Please wait...':label;
+}
+
+// ─── INIT ─────────────────────────────────────────────────
 (async()=>{
   const{data:{session:s}}=await sb.auth.getSession();
-  if(s){session=s;await loadProfile();}
-  else{hide('screen-loading');show('screen-auth');}
+  if(s){ session=s; await loadProfile(); }
+  else { hide('screen-loading'); show('screen-auth'); }
+
   sb.auth.onAuthStateChange(async(_,s)=>{
     session=s;
-    if(s){await loadProfile();}
-    else{profile=null;hideAll('screen-admin','screen-student','screen-take-exam','screen-result');show('screen-auth');}
+    if(s){ await loadProfile(); }
+    else{
+      profile=null;
+      hideAll('screen-admin','screen-student','screen-take-exam','screen-result');
+      show('screen-auth');
+    }
   });
 })();
 
 async function loadProfile(){
   const{data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
-  if(error||!data){hide('screen-loading');show('screen-auth');return;}
-  profile=data;hide('screen-loading');renderScreen();
-}
-function renderScreen(){
-  hideAll('screen-auth','screen-admin','screen-student','screen-take-exam','screen-result');
-  if(profile.role==='admin'){el('admin-name-display').textContent=profile.name;show('screen-admin');adminTab('dashboard');}
-  else{el('student-name-display').textContent=profile.name;show('screen-student');studentTab('exams');}
+  hide('screen-loading');
+  if(error || !data){
+    // Profile may not exist yet (e.g. after email confirmation). Show auth.
+    show('screen-auth');
+    return;
+  }
+  profile=data;
+  renderScreen();
 }
 
-function switchAuthTab(t){
-  el('auth-login').classList.toggle('hidden',t!=='login');
-  el('auth-register').classList.toggle('hidden',t!=='register');
-  el('auth-tabs').querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
+function renderScreen(){
+  hideAll('screen-auth','screen-admin','screen-student','screen-take-exam','screen-result');
+  if(profile.role==='admin'){
+    el('admin-name-display').textContent=profile.name;
+    show('screen-admin'); adminTab('dashboard');
+  } else {
+    el('student-name-display').textContent=profile.name;
+    show('screen-student'); studentTab('exams');
+  }
 }
-function toggleAdminCode(){el('admin-code-row').classList.toggle('hidden',el('reg-role').value!=='admin');}
+
+// ─── AUTH ─────────────────────────────────────────────────
+function switchAuthTab(t){
+  el('auth-login').classList.toggle('hidden', t!=='login');
+  el('auth-register').classList.toggle('hidden', t!=='register');
+  el('auth-tabs').querySelectorAll('.tab').forEach((b,i)=>
+    b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
+}
+function toggleAdminCode(){
+  el('admin-code-row').classList.toggle('hidden', el('reg-role').value!=='admin');
+}
 
 async function doLogin(){
   const email=el('login-email').value.trim().toLowerCase();
   const pass=el('login-pass').value;
   hide('login-error');
-  if(!email||!pass){el('login-error').textContent='Enter email and password';show('login-error');return;}
+  if(!email||!pass){el('login-error').textContent='Enter your email and password.';show('login-error');return;}
   setBtn('login-btn',true,'');
   const{error}=await sb.auth.signInWithPassword({email,password:pass});
   setBtn('login-btn',false,'<i class="ti ti-login"></i> Sign in');
-  if(error){el('login-error').textContent=error.message;show('login-error');}
+  if(error){
+    const msg = error.message.includes('Invalid login')
+      ? 'Incorrect email or password. Please try again.'
+      : error.message;
+    el('login-error').textContent=msg; show('login-error');
+  }
 }
 
 async function doRegister(){
-  const name=el('reg-name').value.trim();
-  const email=el('reg-email').value.trim().toLowerCase();
-  const pass=el('reg-pass').value;
-  const role=el('reg-role').value;
-  const code=el('reg-admin-code').value;
-  hide('reg-error');hide('reg-success');
-  if(!name||!email||!pass){el('reg-error').textContent='All fields are required';show('reg-error');return;}
-  if(pass.length<6){el('reg-error').textContent='Password must be at least 6 characters';show('reg-error');return;}
-  if(role==='admin'&&code!==ADMIN_CODE){el('reg-error').textContent='Invalid admin code';show('reg-error');return;}
+  const name  = el('reg-name').value.trim();
+  const email = el('reg-email').value.trim().toLowerCase();
+  const pass  = el('reg-pass').value;
+  const role  = el('reg-role').value;
+  const code  = el('reg-admin-code').value.trim();
+  hide('reg-error'); hide('reg-success');
+
+  // Client-side validation
+  if(!name||!email||!pass){ showRegErr('Please fill in all fields.'); return; }
+  if(pass.length<6){ showRegErr('Password must be at least 6 characters.'); return; }
+  if(role==='admin' && code!==ADMIN_CODE){ showRegErr('Incorrect admin code. Contact your system administrator.'); return; }
+
   setBtn('reg-btn',true,'');
+
+  // Step 1: create auth user
   const{data,error}=await sb.auth.signUp({email,password:pass});
-  if(error){el('reg-error').textContent=error.message;show('reg-error');setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');return;}
-  if(data.user){
-    const{error:pe}=await sb.from('profiles').insert({id:data.user.id,name,role});
-    if(pe){el('reg-error').textContent='Profile error: '+pe.message;show('reg-error');}
-    else if(!data.session){el('reg-success').textContent='Account created! Check your email to confirm, then sign in.';show('reg-success');}
+
+  if(error){
+    // Common errors with friendly messages
+    let msg=error.message;
+    if(msg.includes('already registered') || msg.includes('already been registered')){
+      msg='This email is already registered. Please sign in instead.';
+    } else if(msg.includes('valid email')){
+      msg='Please enter a valid email address.';
+    } else if(msg.includes('Password')){
+      msg='Password is too weak. Use at least 6 characters.';
+    }
+    showRegErr(msg);
+    setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
+    return;
   }
+
+  if(!data.user){
+    showRegErr('Registration failed. Please try again.');
+    setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
+    return;
+  }
+
+  // Step 2: insert profile row
+  const{error:pe}=await sb.from('profiles').insert({id:data.user.id, name, role});
+
+  if(pe){
+    // If profile insert fails with duplicate, user already exists
+    if(pe.code==='23505'){
+      showRegErr('This email is already registered. Please sign in.');
+    } else {
+      showRegErr('Account created but profile setup failed: '+pe.message+'. Please contact support.');
+    }
+    setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
+    return;
+  }
+
   setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
+
+  // Step 3: if Supabase auto-confirmed (no email confirmation required), session is active
+  if(data.session){
+    session=data.session;
+    profile={id:data.user.id,name,role};
+    renderScreen();
+  } else {
+    // Email confirmation is required
+    el('reg-success').textContent='Account created! Check your email inbox and click the confirmation link, then come back and sign in.';
+    show('reg-success');
+    el('reg-name').value='';el('reg-email').value='';el('reg-pass').value='';
+    el('reg-admin-code').value='';
+  }
 }
 
-async function doLogout(){clearInterval(timerInterval);await sb.auth.signOut();}
+function showRegErr(msg){ el('reg-error').textContent=msg; show('reg-error'); }
+async function doLogout(){ clearInterval(timerInterval); await sb.auth.signOut(); }
 
+// ─── ADMIN TABS ───────────────────────────────────────────
 function adminTab(t){
-  ['dashboard','exams','students','results'].forEach(s=>hide('admin-'+s));show('admin-'+t);
-  el('admin-main-tabs').querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['dashboard','exams','students','results'][i]===t));
+  ['dashboard','exams','students','results'].forEach(s=>hide('admin-'+s));
+  show('admin-'+t);
+  el('admin-main-tabs').querySelectorAll('.tab').forEach((b,i)=>
+    b.classList.toggle('active',['dashboard','exams','students','results'][i]===t));
   if(t==='dashboard')renderAdminDashboard();
   if(t==='exams')renderAdminExams();
   if(t==='students')renderStudents();
   if(t==='results')renderAllResults();
 }
 
+function loadingDiv(){ return '<div class="loading-screen" style="min-height:200px"><div class="spinner"></div></div>'; }
+
 async function renderAdminDashboard(){
-  el('admin-dashboard').innerHTML='<div class="loading-screen" style="min-height:200px"><div class="spinner"></div></div>';
+  el('admin-dashboard').innerHTML=loadingDiv();
   const[{count:ec},{count:sc},{count:subc}]=await Promise.all([
     sb.from('exams').select('*',{count:'exact',head:true}),
     sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','student'),
@@ -403,12 +497,12 @@ async function renderAdminDashboard(){
       <h2 style="font-size:16px;font-weight:600">Recent exams</h2>
       <button class="btn btn-sm btn-primary" onclick="openCreateExam()"><i class="ti ti-plus"></i> New exam</button>
     </div>
-    ${recent&&recent.length?recent.map(examCardHTML).join(''):'<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet.</p></div>'}`;
+    ${recent&&recent.length ? recent.map(examCardHTML).join('') : '<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet.</p></div>'}`;
 }
 
 function examCardHTML(e){
   const badge=e.status==='active'?'badge-green':'badge-gray';
-  return`<div class="exam-card">
+  return `<div class="exam-card">
     <div style="flex:1;min-width:0">
       <div style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.title}</div>
       <div class="text-xs mt-4">${(e.questions||[]).length} questions &middot; ${e.duration} min &middot; Pass ${e.passmark}% &middot; <span class="badge ${badge}" style="font-size:10px">${e.status}</span></div>
@@ -422,14 +516,14 @@ function examCardHTML(e){
 }
 
 async function renderAdminExams(){
-  el('admin-exams').innerHTML='<div class="loading-screen" style="min-height:200px"><div class="spinner"></div></div>';
+  el('admin-exams').innerHTML=loadingDiv();
   const{data:exams}=await sb.from('exams').select('*').order('created_at',{ascending:false});
   el('admin-exams').innerHTML=`
     <div class="flex justify-between align-center mb-16">
       <h2 style="font-size:16px;font-weight:600">All exams (${exams?exams.length:0})</h2>
       <button class="btn btn-sm btn-primary" onclick="openCreateExam()"><i class="ti ti-plus"></i> New exam</button>
     </div>
-    ${exams&&exams.length?exams.map(examCardHTML).join(''):'<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet.</p></div>'}`;
+    ${exams&&exams.length ? exams.map(examCardHTML).join('') : '<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet. Create your first one.</p></div>'}`;
 }
 
 async function toggleStatus(id,current){
@@ -444,31 +538,31 @@ async function deleteExam(id){
 }
 
 async function renderStudents(){
-  el('admin-students').innerHTML='<div class="loading-screen" style="min-height:200px"><div class="spinner"></div></div>';
+  el('admin-students').innerHTML=loadingDiv();
   const[{data:students},{data:subs}]=await Promise.all([
     sb.from('profiles').select('*').eq('role','student').order('created_at',{ascending:false}),
     sb.from('submissions').select('student_id,auto_score')
   ]);
   el('admin-students').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">Students (${students?students.length:0})</h2>`+
     (students&&students.length
-      ?`<table class="results-table"><thead><tr><th>Name</th><th>Exams taken</th><th>Avg score</th><th>Joined</th></tr></thead><tbody>`+
+      ? `<table class="results-table"><thead><tr><th>Name</th><th>Exams taken</th><th>Avg score</th><th>Joined</th></tr></thead><tbody>`+
         students.map(s=>{
           const ms=(subs||[]).filter(x=>x.student_id===s.id&&x.auto_score!=null);
-          const avg=ms.length?Math.round(ms.reduce((a,b)=>a+(b.auto_score||0),0)/ms.length)+'%':'—';
-          return`<tr><td><strong>${s.name}</strong></td><td>${(subs||[]).filter(x=>x.student_id===s.id).length}</td><td>${avg}</td><td>${new Date(s.created_at).toLocaleDateString()}</td></tr>`;
+          const avg=ms.length ? Math.round(ms.reduce((a,b)=>a+(b.auto_score||0),0)/ms.length)+'%' : '—';
+          return `<tr><td><strong>${s.name}</strong></td><td>${(subs||[]).filter(x=>x.student_id===s.id).length}</td><td>${avg}</td><td>${new Date(s.created_at).toLocaleDateString()}</td></tr>`;
         }).join('')+'</tbody></table>'
-      :'<div class="empty-state"><i class="ti ti-users-off"></i><p>No students yet.</p></div>');
+      : '<div class="empty-state"><i class="ti ti-users-off"></i><p>No students yet.</p></div>');
 }
 
 async function renderAllResults(){
-  el('admin-results').innerHTML='<div class="loading-screen" style="min-height:200px"><div class="spinner"></div></div>';
-  const{data:subs}=await sb.from('submissions').select('*,profiles(name),exams(title,passmark)').order('submitted_at',{ascending:false}).limit(200);
+  el('admin-results').innerHTML=loadingDiv();
+  const{data:subs}=await sb.from('submissions').select('*,profiles(name),exams(title,passmark)').order('submitted_at',{ascending:false}).limit(500);
   el('admin-results').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">All submissions (${subs?subs.length:0})</h2>`+
-    (subs&&subs.length?subs.map(s=>{
+    (subs&&subs.length ? subs.map(s=>{
       const pm=s.exams?s.exams.passmark||50:50;
       const pass=s.auto_score!=null&&s.auto_score>=pm;
       const badge=s.auto_score!=null?(pass?'badge-green':'badge-red'):'badge-amber';
-      return`<div class="submission-row">
+      return `<div class="submission-row">
         <div>
           <div style="font-size:14px;font-weight:600">${s.profiles?s.profiles.name:'Unknown'}</div>
           <div class="text-xs mt-4">${s.exams?s.exams.title:'Deleted exam'} &middot; ${new Date(s.submitted_at).toLocaleString()}</div>
@@ -478,15 +572,17 @@ async function renderAllResults(){
           <button class="btn btn-sm" onclick="viewSubmission('${s.id}')"><i class="ti ti-eye"></i> Review</button>
         </div>
       </div>`;
-    }).join(''):'<div class="empty-state"><i class="ti ti-chart-off"></i><p>No submissions yet.</p></div>');
+    }).join('') : '<div class="empty-state"><i class="ti ti-chart-off"></i><p>No submissions yet.</p></div>');
 }
 
 async function viewSubmission(sid){
   const{data:s}=await sb.from('submissions').select('*,profiles(name),exams(*)').eq('id',sid).single();
-  const exam=s.exams;const pm=exam?exam.passmark||50:50;const pass=s.auto_score!=null&&s.auto_score>=pm;
-  let html=`<div class="card mb-16"><div style="font-size:15px;font-weight:600">${s.profiles?s.profiles.name:'Unknown'}</div>
+  const exam=s.exams; const pm=exam?exam.passmark||50:50; const pass=s.auto_score!=null&&s.auto_score>=pm;
+  let html=`<div class="card mb-16">
+    <div style="font-size:15px;font-weight:600">${s.profiles?s.profiles.name:'Unknown'}</div>
     <div class="text-xs mt-4">${exam?exam.title:'Deleted'} &middot; ${new Date(s.submitted_at).toLocaleString()}</div>
-    ${s.auto_score!=null?`<div class="mt-8"><span class="badge ${pass?'badge-green':'badge-red'}">${s.auto_score}% — ${pass?'Passed':'Failed'}</span></div>`:''}</div>`;
+    ${s.auto_score!=null?`<div class="mt-8"><span class="badge ${pass?'badge-green':'badge-red'}">${s.auto_score}% — ${pass?'Passed':'Failed'}</span></div>`:''}
+  </div>`;
   if(exam&&exam.questions){
     exam.questions.forEach((q,i)=>{
       const ans=s.answers[q.id];
@@ -494,12 +590,14 @@ async function viewSubmission(sid){
       if(q.type==='mcq'){
         q.options.forEach((o,oi)=>{
           const isAns=String(ans)===String(oi),isCorrect=String(q.correct)===String(oi);
-          html+=`<div class="option-row ${isCorrect?'correct':(isAns?'wrong':'')}">${isCorrect?'<i class="ti ti-check"></i>':isAns?'<i class="ti ti-x"></i>':'<span style="width:16px;display:inline-block"></span>'} ${o}</div>`;
+          const cls=isCorrect?'correct':(isAns?'wrong':'');
+          html+=`<div class="option-row ${cls}">${isCorrect?'<i class="ti ti-check"></i>':isAns?'<i class="ti ti-x"></i>':'<span style="width:16px;display:inline-block"></span>'} ${o}</div>`;
         });
       }else if(q.type==='truefalse'){
         ['True','False'].forEach((o,oi)=>{
           const isAns=String(ans)===String(oi),isCorrect=String(q.correct)===String(oi);
-          html+=`<div class="option-row ${isCorrect?'correct':(isAns?'wrong':'')}">${isCorrect?'<i class="ti ti-check"></i>':isAns?'<i class="ti ti-x"></i>':'<span style="width:16px;display:inline-block"></span>'} ${o}</div>`;
+          const cls=isCorrect?'correct':(isAns?'wrong':'');
+          html+=`<div class="option-row ${cls}">${isCorrect?'<i class="ti ti-check"></i>':isAns?'<i class="ti ti-x"></i>':'<span style="width:16px;display:inline-block"></span>'} ${o}</div>`;
         });
       }else{
         html+=`<div style="background:var(--surface2);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:4px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer</em>'}</div>`;
@@ -508,31 +606,39 @@ async function viewSubmission(sid){
       html+='</div>';
     });
   }
-  el('submission-review-content').innerHTML=html;show('modal-view-submission');
+  el('submission-review-content').innerHTML=html;
+  show('modal-view-submission');
 }
 
+// ─── EXAM BUILDER ─────────────────────────────────────────
 function openCreateExam(){
-  editingExamId=null;draftQuestions=[];
-  el('exam-title-input').value='';el('exam-desc-input').value='';
-  el('exam-duration-input').value=60;el('exam-pass-input').value=50;el('exam-status-input').value='draft';
+  editingExamId=null; draftQuestions=[];
+  el('exam-title-input').value=''; el('exam-desc-input').value='';
+  el('exam-duration-input').value=60; el('exam-pass-input').value=50;
+  el('exam-status-input').value='draft';
   el('modal-exam-title-h').textContent='Create exam';
-  renderQEditor();hide('modal-exam-error');show('modal-create-exam');
+  renderQEditor(); hide('modal-exam-error'); show('modal-create-exam');
 }
 async function openEditExam(id){
   const{data:e}=await sb.from('exams').select('*').eq('id',id).single();
-  editingExamId=id;draftQuestions=JSON.parse(JSON.stringify(e.questions||[]));
-  el('exam-title-input').value=e.title;el('exam-desc-input').value=e.description||'';
-  el('exam-duration-input').value=e.duration;el('exam-pass-input').value=e.passmark||50;el('exam-status-input').value=e.status;
+  editingExamId=id; draftQuestions=JSON.parse(JSON.stringify(e.questions||[]));
+  el('exam-title-input').value=e.title; el('exam-desc-input').value=e.description||'';
+  el('exam-duration-input').value=e.duration; el('exam-pass-input').value=e.passmark||50;
+  el('exam-status-input').value=e.status;
   el('modal-exam-title-h').textContent='Edit exam';
-  renderQEditor();hide('modal-exam-error');show('modal-create-exam');
+  renderQEditor(); hide('modal-exam-error'); show('modal-create-exam');
 }
 
 function addQuestion(){
   const t=el('add-q-type').value;
   draftQuestions.push({id:uid(),type:t,text:'',options:t==='mcq'?['','','','']:undefined,correct:0,modelAnswer:''});
   renderQEditor();
-  setTimeout(()=>{const b=el('questions-editor').querySelectorAll('.question-block');if(b.length)b[b.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});},100);
+  setTimeout(()=>{
+    const blocks=el('questions-editor').querySelectorAll('.question-block');
+    if(blocks.length)blocks[blocks.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});
+  },100);
 }
+
 function renderQEditor(){
   el('q-count-badge').textContent=draftQuestions.length;
   el('questions-editor').innerHTML=draftQuestions.map((q,i)=>{
@@ -542,29 +648,30 @@ function renderQEditor(){
         <div class="flex align-center gap-8 mb-8">
           <input type="radio" name="c_${q.id}" ${q.correct==oi?'checked':''} onchange="setCorrect('${q.id}',${oi})" style="width:auto;flex-shrink:0">
           <input type="text" value="${o.replace(/"/g,'&quot;')}" placeholder="Option ${String.fromCharCode(65+oi)}" oninput="setOption('${q.id}',${oi},this.value)" style="flex:1">
-          ${q.options.length>2?`<button class="btn btn-sm btn-danger" onclick="removeOption('${q.id}',${oi})" style="padding:4px 8px"><i class="ti ti-x"></i></button>`:''}
+          ${q.options.length>2?`<button class="btn btn-sm btn-danger" onclick="removeOption('${q.id}',${oi})" style="padding:4px 8px;flex-shrink:0"><i class="ti ti-x"></i></button>`:''}
         </div>`).join('')+
         (q.options.length<8?`<button class="btn btn-sm mt-4" onclick="addOption('${q.id}')"><i class="ti ti-plus"></i> Add option</button>`:'');
     }else if(q.type==='truefalse'){
       inner=`<div class="flex gap-24">
         <label class="flex align-center gap-8" style="cursor:pointer"><input type="radio" name="tf_${q.id}" ${q.correct==0?'checked':''} onchange="setCorrect('${q.id}',0)" style="width:auto"> True</label>
         <label class="flex align-center gap-8" style="cursor:pointer"><input type="radio" name="tf_${q.id}" ${q.correct==1?'checked':''} onchange="setCorrect('${q.id}',1)" style="width:auto"> False</label>
-      </div><div class="text-xs mt-8">Select the correct answer</div>`;
+      </div><div class="text-xs mt-8">Select the correct answer above</div>`;
     }else if(q.type==='short'){
-      inner=`<div><div class="label mt-8">Model answer</div><input type="text" value="${(q.modelAnswer||'').replace(/"/g,'&quot;')}" placeholder="Expected answer..." oninput="setModelAnswer('${q.id}',this.value)"></div>`;
+      inner=`<div class="mt-8"><div class="label">Model answer</div><input type="text" value="${(q.modelAnswer||'').replace(/"/g,'&quot;')}" placeholder="Expected answer..." oninput="setModelAnswer('${q.id}',this.value)"></div>`;
     }else{
-      inner=`<div class="text-xs mt-4" style="color:var(--text3);padding:10px;background:var(--surface2);border-radius:var(--radius)">Essay — reviewed manually by admin.</div>`;
+      inner=`<div class="info-box mt-8" style="font-size:12px">Essay — student writes a long response. Reviewed manually by admin.</div>`;
     }
-    return`<div class="question-block mb-12" style="border-color:var(--border2)">
+    return `<div class="question-block mb-12" style="border-color:var(--border2)">
       <div class="flex justify-between align-center mb-10">
         <div class="flex gap-8 align-center"><span class="badge badge-blue">Q${i+1}</span><span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div>
         <button class="btn btn-sm btn-danger" onclick="removeQuestion('${q.id}')"><i class="ti ti-trash"></i></button>
       </div>
-      <textarea rows="2" placeholder="Enter your question..." oninput="setQText('${q.id}',this.value)" style="width:100%;margin-bottom:10px;resize:vertical">${q.text}</textarea>
+      <textarea rows="2" placeholder="Enter your question text here..." oninput="setQText('${q.id}',this.value)" style="width:100%;margin-bottom:10px;resize:vertical">${q.text}</textarea>
       ${inner}
     </div>`;
   }).join('');
 }
+
 function setQText(id,v){draftQuestions.find(q=>q.id===id).text=v;}
 function setCorrect(id,v){draftQuestions.find(q=>q.id===id).correct=parseInt(v);}
 function setOption(id,i,v){draftQuestions.find(q=>q.id===id).options[i]=v;}
@@ -574,49 +681,55 @@ function removeOption(id,oi){const q=draftQuestions.find(q=>q.id===id);q.options
 function removeQuestion(id){draftQuestions=draftQuestions.filter(q=>q.id!==id);renderQEditor();}
 
 async function saveExam(){
-  const title=el('exam-title-input').value.trim();
-  const duration=parseInt(el('exam-duration-input').value)||60;
-  const passmark=parseInt(el('exam-pass-input').value)||50;
-  const status=el('exam-status-input').value;
-  const description=el('exam-desc-input').value.trim();
+  const title    = el('exam-title-input').value.trim();
+  const duration = parseInt(el('exam-duration-input').value)||60;
+  const passmark = parseInt(el('exam-pass-input').value)||50;
+  const status   = el('exam-status-input').value;
+  const description = el('exam-desc-input').value.trim();
   hide('modal-exam-error');
-  if(!title){el('modal-exam-error').textContent='Exam title is required';show('modal-exam-error');return;}
-  if(!draftQuestions.length){el('modal-exam-error').textContent='Add at least one question';show('modal-exam-error');return;}
+  if(!title){el('modal-exam-error').textContent='Exam title is required.';show('modal-exam-error');return;}
+  if(!draftQuestions.length){el('modal-exam-error').textContent='Add at least one question.';show('modal-exam-error');return;}
   for(const q of draftQuestions){
-    if(!q.text.trim()){el('modal-exam-error').textContent='All questions must have text';show('modal-exam-error');return;}
-    if(q.type==='mcq'&&q.options.filter(o=>o.trim()).length<2){el('modal-exam-error').textContent='MCQ questions need at least 2 options';show('modal-exam-error');return;}
+    if(!q.text.trim()){el('modal-exam-error').textContent='All questions must have text.';show('modal-exam-error');return;}
+    if(q.type==='mcq'&&q.options.filter(o=>o.trim()).length<2){el('modal-exam-error').textContent='MCQ questions need at least 2 options.';show('modal-exam-error');return;}
   }
   setBtn('save-exam-btn',true,'');
   const payload={title,description,duration,passmark,status,questions:draftQuestions};
   let error;
-  if(editingExamId){({error}=await sb.from('exams').update(payload).eq('id',editingExamId));}
-  else{payload.created_by=session.user.id;({error}=await sb.from('exams').insert(payload));}
+  if(editingExamId){
+    ({error}=await sb.from('exams').update(payload).eq('id',editingExamId));
+  }else{
+    payload.created_by=session.user.id;
+    ({error}=await sb.from('exams').insert(payload));
+  }
   setBtn('save-exam-btn',false,'<i class="ti ti-device-floppy"></i> Save exam');
-  if(error){el('modal-exam-error').textContent=error.message;show('modal-exam-error');return;}
-  closeModal('modal-create-exam');renderAdminExams();
+  if(error){el('modal-exam-error').textContent='Save failed: '+error.message;show('modal-exam-error');return;}
+  closeModal('modal-create-exam');
+  renderAdminExams();
 }
 
+// ─── STUDENT ──────────────────────────────────────────────
 function studentTab(t){
-  ['exams','myresults'].forEach(s=>hide('student-'+s));show('student-'+t);
+  ['exams','myresults'].forEach(s=>hide('student-'+s)); show('student-'+t);
   el('student-tabs').querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',i===(t==='exams'?0:1)));
   if(t==='exams')renderStudentExams();
   if(t==='myresults')renderMyResults();
 }
 
 async function renderStudentExams(){
-  el('student-exams').innerHTML='<div class="loading-screen" style="min-height:200px"><div class="spinner"></div></div>';
+  el('student-exams').innerHTML=loadingDiv();
   const[{data:exams},{data:mySubs}]=await Promise.all([
     sb.from('exams').select('*').eq('status','active').order('created_at',{ascending:false}),
     sb.from('submissions').select('exam_id,id,auto_score').eq('student_id',session.user.id)
   ]);
   const subMap={};(mySubs||[]).forEach(s=>subMap[s.exam_id]=s);
-  el('student-exams').innerHTML=exams&&exams.length?exams.map(e=>{
-    const sub=subMap[e.id];const taken=!!sub;
-    const pass=sub&&sub.auto_score!=null&&sub.auto_score>=(e.passmark||50);
-    return`<div class="exam-card">
+  el('student-exams').innerHTML=exams&&exams.length ? exams.map(e=>{
+    const sub=subMap[e.id]; const taken=!!sub;
+    const pm=e.passmark||50; const pass=sub&&sub.auto_score!=null&&sub.auto_score>=pm;
+    return `<div class="exam-card">
       <div style="flex:1;min-width:0">
         <div style="font-size:15px;font-weight:600">${e.title}</div>
-        <div class="text-xs mt-4">${e.description?e.description+' &middot; ':''} ${(e.questions||[]).length} questions &middot; ${e.duration} min &middot; Pass: ${e.passmark||50}%</div>
+        <div class="text-xs mt-4">${e.description?e.description+' &middot; ':''} ${(e.questions||[]).length} questions &middot; ${e.duration} min &middot; Pass: ${pm}%</div>
       </div>
       <div class="flex gap-8 align-center" style="flex-shrink:0">
         ${taken
@@ -625,31 +738,32 @@ async function renderStudentExams(){
           :`<button class="btn btn-sm btn-primary" onclick="startExam('${e.id}')"><i class="ti ti-player-play"></i> Start exam</button>`}
       </div>
     </div>`;
-  }).join(''):'<div class="empty-state"><i class="ti ti-clock"></i><p>No exams available right now.</p></div>';
+  }).join('') : '<div class="empty-state"><i class="ti ti-clock"></i><p>No exams available right now. Check back later.</p></div>';
 }
 
 async function renderMyResults(){
-  el('student-myresults').innerHTML='<div class="loading-screen" style="min-height:200px"><div class="spinner"></div></div>';
+  el('student-myresults').innerHTML=loadingDiv();
   const{data:subs}=await sb.from('submissions').select('*,exams(title,passmark)').eq('student_id',session.user.id).order('submitted_at',{ascending:false});
-  el('student-myresults').innerHTML=subs&&subs.length?subs.map(s=>{
-    const pm=s.exams?s.exams.passmark||50:50;const pass=s.auto_score!=null&&s.auto_score>=pm;
+  el('student-myresults').innerHTML=subs&&subs.length ? subs.map(s=>{
+    const pm=s.exams?s.exams.passmark||50:50; const pass=s.auto_score!=null&&s.auto_score>=pm;
     const badge=s.auto_score!=null?(pass?'badge-green':'badge-red'):'badge-amber';
-    return`<div class="submission-row">
+    return `<div class="submission-row">
       <div><div style="font-size:14px;font-weight:600">${s.exams?s.exams.title:'Deleted exam'}</div><div class="text-xs mt-4">${new Date(s.submitted_at).toLocaleString()}</div></div>
       <div class="flex gap-8 align-center">
         <span class="badge ${badge}">${s.auto_score!=null?s.auto_score+'%':'Pending'}</span>
         <button class="btn btn-sm" onclick="viewMyResult('${s.id}')"><i class="ti ti-eye"></i> Review</button>
       </div>
     </div>`;
-  }).join(''):'<div class="empty-state"><i class="ti ti-trophy"></i><p>No exams completed yet.</p></div>';
+  }).join('') : '<div class="empty-state"><i class="ti ti-trophy"></i><p>You have not completed any exams yet.</p></div>';
 }
 
+// ─── EXAM TAKING ──────────────────────────────────────────
 async function startExam(examId){
   const{data:exam}=await sb.from('exams').select('*').eq('id',examId).single();
   if(!exam)return;
   if(!confirm(`Start "${exam.title}"?\n\nDuration: ${exam.duration} minutes\nQuestions: ${(exam.questions||[]).length}\n\nThe timer starts immediately.`))return;
-  currentExam=exam;examAnswers={};
-  hideAll('screen-student','screen-admin');show('screen-take-exam');
+  currentExam=exam; examAnswers={};
+  hideAll('screen-student'); show('screen-take-exam');
   el('exam-header').innerHTML=`
     <h1 style="font-size:22px;font-weight:700;margin-bottom:6px">${exam.title}</h1>
     ${exam.description?`<p class="text-sm">${exam.description}</p>`:''}
@@ -658,7 +772,8 @@ async function startExam(examId){
       <span class="badge badge-amber"><i class="ti ti-clock"></i> ${exam.duration} min</span>
       <span class="badge badge-blue"><i class="ti ti-percentage"></i> Pass: ${exam.passmark||50}%</span>
     </div>`;
-  renderExamQuestions();startTimer(exam.duration*60);
+  renderExamQuestions();
+  startTimer(exam.duration*60);
 }
 
 function renderExamQuestions(){
@@ -666,11 +781,21 @@ function renderExamQuestions(){
   updateProgress();
   el('exam-questions').innerHTML=currentExam.questions.map((q,i)=>{
     let opts='';
-    if(q.type==='mcq'){opts=q.options.map((o,oi)=>`<div class="option-row" id="opt_${q.id}_${oi}" onclick="selectOpt('${q.id}',${oi})">${o}</div>`).join('');}
-    else if(q.type==='truefalse'){opts=`<div class="option-row" id="opt_${q.id}_0" onclick="selectOpt('${q.id}',0)">True</div><div class="option-row" id="opt_${q.id}_1" onclick="selectOpt('${q.id}',1)">False</div>`;}
-    else if(q.type==='short'){opts=`<input type="text" placeholder="Type your answer..." oninput="examAnswers['${q.id}']=this.value;updateProgress()">`;}
-    else{opts=`<textarea rows="6" placeholder="Write your answer here..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="width:100%;resize:vertical"></textarea>`;}
-    return`<div class="question-block"><div class="q-num">Question ${i+1} of ${currentExam.questions.length} <span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div><div class="q-text">${q.text}</div>${opts}</div>`;
+    if(q.type==='mcq'){
+      opts=q.options.map((o,oi)=>`<div class="option-row" id="opt_${q.id}_${oi}" onclick="selectOpt('${q.id}',${oi})">${o}</div>`).join('');
+    }else if(q.type==='truefalse'){
+      opts=`<div class="option-row" id="opt_${q.id}_0" onclick="selectOpt('${q.id}',0)">True</div>
+            <div class="option-row" id="opt_${q.id}_1" onclick="selectOpt('${q.id}',1)">False</div>`;
+    }else if(q.type==='short'){
+      opts=`<input type="text" placeholder="Type your answer..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="margin-top:4px">`;
+    }else{
+      opts=`<textarea rows="6" placeholder="Write your answer here..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="width:100%;margin-top:8px;resize:vertical"></textarea>`;
+    }
+    return `<div class="question-block">
+      <div class="q-num">Question ${i+1} of ${currentExam.questions.length} <span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div>
+      <div class="q-text">${q.text}</div>
+      ${opts}
+    </div>`;
   }).join('');
 }
 
@@ -689,23 +814,24 @@ function updateProgress(){
 }
 
 function startTimer(seconds){
-  clearInterval(timerInterval);let remaining=seconds;
+  clearInterval(timerInterval); let remaining=seconds;
   function tick(){
     const m=Math.floor(remaining/60).toString().padStart(2,'0');
     const s=(remaining%60).toString().padStart(2,'0');
     const d=el('exam-timer-display');
     d.textContent=m+':'+s;
     d.className='timer-display'+(remaining<=300?' warn':'')+(remaining<=60?' danger':'');
-    if(remaining<=0){clearInterval(timerInterval);alert('Time is up! Submitting now.');submitExam();}
+    if(remaining<=0){clearInterval(timerInterval);alert('Time is up! Your exam will be submitted now.');submitExam();}
     remaining--;
   }
-  tick();timerInterval=setInterval(tick,1000);
+  tick(); timerInterval=setInterval(tick,1000);
 }
 
 function confirmSubmit(){
   const answered=currentExam.questions.filter(q=>examAnswers[q.id]!=null&&examAnswers[q.id]!=='').length;
   const unanswered=currentExam.questions.length-answered;
-  if(confirm(unanswered>0?`You have ${unanswered} unanswered question${unanswered>1?'s':''}.\n\nSubmit anyway?`:'Submit your exam now? This cannot be undone.'))submitExam();
+  const msg=unanswered>0?`You have ${unanswered} unanswered question${unanswered>1?'s':''}.\n\nSubmit anyway?`:'Submit your exam now? This cannot be undone.';
+  if(confirm(msg))submitExam();
 }
 
 async function submitExam(){
@@ -717,37 +843,44 @@ async function submitExam(){
     const correct=gradeable.filter(q=>String(examAnswers[q.id])===String(q.correct)).length;
     auto_score=Math.round((correct/exam.questions.length)*100);
   }
-  const{data:sub,error}=await sb.from('submissions').insert({exam_id:exam.id,student_id:session.user.id,answers:examAnswers,auto_score}).select().single();
-  if(error){alert('Error saving: '+error.message);return;}
+  const{data:sub,error}=await sb.from('submissions')
+    .insert({exam_id:exam.id,student_id:session.user.id,answers:examAnswers,auto_score})
+    .select().single();
+  if(error){alert('Error saving your submission: '+error.message);return;}
   showResult(sub,exam);
 }
 
 function showResult(sub,exam){
-  hideAll('screen-take-exam','screen-student','screen-admin');show('screen-result');
-  const pm=exam?exam.passmark||50:50;const pass=sub.auto_score!=null&&sub.auto_score>=pm;
+  hideAll('screen-take-exam','screen-student','screen-admin');
+  show('screen-result');
+  const pm=exam?exam.passmark||50:50;
+  const pass=sub.auto_score!=null&&sub.auto_score>=pm;
   const sc=sub.auto_score!=null?(pass?'#8fcc40':'#f07170'):'#7ab5ef';
   const manual=exam?exam.questions.filter(q=>q.type==='short'||q.type==='essay').length:0;
   let html=`<div class="card mb-24" style="text-align:center">
     <div class="score-circle" style="border-color:${sc}">
       ${sub.auto_score!=null
-        ?`<div style="font-size:30px;font-weight:700;color:${sc}">${sub.auto_score}%</div><div style="font-size:11px;font-weight:600;color:${sc};letter-spacing:1px">${pass?'PASSED':'FAILED'}</div>`
+        ?`<div style="font-size:30px;font-weight:700;color:${sc}">${sub.auto_score}%</div>
+           <div style="font-size:11px;font-weight:600;color:${sc};letter-spacing:1px">${pass?'PASSED':'FAILED'}</div>`
         :`<i class="ti ti-clock" style="font-size:34px;color:#7ab5ef"></i>`}
     </div>
     <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">${sub.auto_score!=null?(pass?'Great job!':'Keep studying'):'Submitted!'}</h2>
-    <p class="text-sm">${sub.auto_score!=null?`You scored ${sub.auto_score}% — pass mark is ${pm}%`:'Your answers have been submitted for review.'}</p>
+    <p class="text-sm">${sub.auto_score!=null?`You scored ${sub.auto_score}% — pass mark is ${pm}%`:'Your answers have been submitted.'}</p>
     ${manual>0?`<p class="text-xs mt-8" style="color:var(--text3)">${manual} essay/short answer question${manual>1?'s':''} will be reviewed by your instructor.</p>`:''}
   </div>
   <h3 style="font-size:15px;font-weight:600;margin-bottom:14px">Answer review</h3>`;
   if(exam&&exam.questions){
     exam.questions.forEach((q,i)=>{
-      const ans=sub.answers[q.id];let feedback='';
+      const ans=sub.answers[q.id]; let feedback='';
       if(q.type==='mcq'||q.type==='truefalse'){
-        const opts=q.type==='mcq'?q.options:['True','False'];const correct=String(ans)===String(q.correct);
+        const opts=q.type==='mcq'?q.options:['True','False'];
+        const correct=String(ans)===String(q.correct);
         feedback=`<div class="option-row ${correct?'correct':'wrong'} mt-8"><i class="ti ti-${correct?'check':'x'}"></i> ${ans!=null?opts[ans]:'No answer'}</div>`;
-        if(!correct)feedback+=`<div class="text-xs mt-8"><i class="ti ti-check" style="color:#8fcc40"></i> Correct: ${opts[q.correct]}</div>`;
+        if(!correct)feedback+=`<div class="text-xs mt-8"><i class="ti ti-check" style="color:#8fcc40"></i> Correct answer: ${opts[q.correct]}</div>`;
       }else{
-        feedback=`<div style="background:var(--surface2);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:8px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer</em>'}</div>`;
+        feedback=`<div style="background:var(--surface2);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:8px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer provided</em>'}</div>`;
         if(q.type==='short'&&q.modelAnswer)feedback+=`<div class="text-xs mt-8"><strong>Model answer:</strong> ${q.modelAnswer}</div>`;
+        if(q.type==='essay')feedback+=`<div class="text-xs mt-4" style="color:var(--text3)">Your instructor will review this response.</div>`;
       }
       html+=`<div class="question-block mb-12"><div class="q-num">Q${i+1} <span class="badge badge-gray">${qTypeLabel(q.type)}</span></div><div class="q-text">${q.text}</div>${feedback}</div>`;
     });
@@ -757,7 +890,7 @@ function showResult(sub,exam){
 
 async function viewMyResult(sid){
   const{data:s}=await sb.from('submissions').select('*,exams(*)').eq('id',sid).single();
-  if(!s||!s.exams){alert('Exam data no longer available.');return;}
+  if(!s||!s.exams){alert('Exam data is no longer available.');return;}
   showResult(s,s.exams);
 }
 function goBackToDashboard(){
