@@ -9,38 +9,46 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f1117;--bg2:#1a1d2e;--bg3:#242740;
-  --surface:#1e2235;--surface2:#252a3d;
-  --border:#2e3350;--border2:#3a4060;
-  --text:#e8eaf6;--text2:#9499c0;--text3:#5a6080;
-  --blue:#378ADD;--blue-dark:#185FA5;
-  --green:#639922;--green-dark:#3B6D11;
-  --red:#E24B4A;--red-dark:#A32D2D;
-  --amber:#BA7517;
+  --bg:#060a12;--bg2:#0d1220;--bg3:#141b2e;
+  --surface:#111827;--surface2:#1a2236;
+  --border:#1e2d45;--border2:#2a3d5c;
+  --text:#e2e8f8;--text2:#7e93b8;--text3:#3d5175;
+  --blue:#4a9eff;--blue-dark:#1a5fb4;
+  --green:#4ade80;--green-dark:#166534;
+  --red:#f87171;--red-dark:#991b1b;
+  --amber:#fbbf24;
   --radius:8px;--radius-lg:12px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
-input,textarea,select{font-family:inherit;font-size:14px;padding:9px 13px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);width:100%;transition:border-color .15s,box-shadow .15s;outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,.18)}
+
+/* ── SCIENCE CANVAS BACKGROUND ── */
+#science-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.55}
+
+/* ── OVERLAYS ── */
+.screen-wrap{position:relative;z-index:1}
+
+input,textarea,select{font-family:inherit;font-size:14px;padding:9px 13px;border:1px solid var(--border2);border-radius:var(--radius);background:rgba(10,18,35,0.85);color:var(--text);width:100%;transition:border-color .15s,box-shadow .15s;outline:none;backdrop-filter:blur(4px)}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(74,158,255,.15)}
 input::placeholder,textarea::placeholder{color:var(--text3)}
-select option{background:var(--surface2)}
-.btn{font-family:inherit;font-size:14px;font-weight:500;padding:9px 18px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);cursor:pointer;transition:background .15s,transform .1s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn:hover{background:var(--bg3)}.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+select option{background:#0d1220}
+.btn{font-family:inherit;font-size:14px;font-weight:500;padding:9px 18px;border:1px solid var(--border2);border-radius:var(--radius);background:rgba(26,34,54,0.9);color:var(--text);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;backdrop-filter:blur(4px)}
+.btn:hover{background:rgba(42,61,92,0.95);border-color:var(--border2)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .btn-primary{background:var(--blue-dark);color:#fff;border-color:var(--blue-dark)}
-.btn-primary:hover{background:#0C447C}
+.btn-primary:hover{background:#1a4f96}
 .btn-danger{background:var(--red-dark);color:#fff;border-color:var(--red-dark)}
-.btn-danger:hover{background:#791F1F}
+.btn-danger:hover{background:#7f1d1d}
 .btn-success{background:var(--green-dark);color:#fff;border-color:var(--green-dark)}
 .btn-sm{padding:6px 13px;font-size:13px}
 .hidden{display:none!important}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem}
+.card{background:rgba(11,17,30,0.82);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;backdrop-filter:blur(16px)}
 .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;letter-spacing:.3px}
-.badge-blue{background:rgba(55,138,221,.15);color:#7ab5ef}
-.badge-green{background:rgba(99,153,34,.15);color:#8fcc40}
-.badge-amber{background:rgba(186,117,23,.15);color:#e8a63a}
-.badge-red{background:rgba(226,75,74,.15);color:#f07170}
-.badge-gray{background:rgba(255,255,255,.07);color:var(--text2)}
+.badge-blue{background:rgba(74,158,255,.12);color:#7ab5ff}
+.badge-green{background:rgba(74,222,128,.12);color:#4ade80}
+.badge-amber{background:rgba(251,191,36,.12);color:#fbbf24}
+.badge-red{background:rgba(248,113,113,.12);color:#f87171}
+.badge-gray{background:rgba(255,255,255,.06);color:var(--text2)}
 .page{padding:2rem 1.5rem;max-width:900px;margin:0 auto;width:100%}
 .flex{display:flex}.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}
 .flex-col{flex-direction:column}.align-center{align-items:center}
@@ -51,55 +59,60 @@ select option{background:var(--surface2)}
 .mb-4{margin-bottom:4px}.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
 .label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 .text-sm{font-size:13px;color:var(--text2)}.text-xs{font-size:12px;color:var(--text3)}
-.text-error{font-size:13px;color:#f07170;line-height:1.5}
-.text-success{font-size:13px;color:#8fcc40;line-height:1.5}
+.text-error{font-size:13px;color:#f87171;line-height:1.5}
+.text-success{font-size:13px;color:#4ade80;line-height:1.5}
 .divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
-.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+.nav{background:rgba(6,10,18,0.88);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
 .nav-brand{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;color:var(--text)}
 .brand-icon{width:34px;height:34px;background:var(--blue-dark);border-radius:var(--radius);display:flex;align-items:center;justify-content:center}
 .brand-icon i{font-size:18px;color:#fff}
 .nav-right{display:flex;align-items:center;gap:12px}
-.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;text-align:center}
+.stat-card{background:rgba(16,22,38,0.8);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;text-align:center;backdrop-filter:blur(12px)}
 .stat-num{font-size:28px;font-weight:700;color:var(--text)}.stat-label{font-size:13px;color:var(--text2);margin-top:3px}
-.exam-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:border-color .15s}
+.exam-card{background:rgba(11,17,30,0.78);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:border-color .15s;backdrop-filter:blur(10px)}
 .exam-card:hover{border-color:var(--border2)}
-.question-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:14px}
+.question-block{background:rgba(11,17,30,0.82);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:14px;backdrop-filter:blur(10px)}
 .q-num{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:8px}
 .q-text{font-size:16px;font-weight:500;color:var(--text);margin-bottom:14px;line-height:1.5}
-.option-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:background .1s,border-color .1s;font-size:14px;color:var(--text)}
-.option-row:hover{background:var(--surface2);border-color:var(--border2)}
-.option-row.selected{border-color:var(--blue);background:rgba(55,138,221,.1)}
-.option-row.correct{border-color:#639922;background:rgba(99,153,34,.12);color:#8fcc40}
-.option-row.wrong{border-color:var(--red-dark);background:rgba(163,45,45,.12);color:#f07170}
-.tab-bar{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:var(--radius-lg);margin-bottom:1.75rem;border:1px solid var(--border)}
-.tab{flex:1;padding:8px 12px;font-size:13px;font-weight:500;border:none;border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;gap:6px}
-.tab.active{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}
-.tab:hover:not(.active){background:rgba(255,255,255,.05)}
-.progress-bar{height:5px;background:var(--surface2);border-radius:3px;margin-top:8px;overflow:hidden}
+.option-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:all .1s;font-size:14px;color:var(--text);background:rgba(20,27,46,0.5)}
+.option-row:hover{background:rgba(42,61,92,0.6);border-color:var(--border2)}
+.option-row.selected{border-color:var(--blue);background:rgba(74,158,255,.1)}
+.option-row.correct{border-color:#166534;background:rgba(74,222,128,.1);color:#4ade80}
+.option-row.wrong{border-color:var(--red-dark);background:rgba(153,27,27,.15);color:#f87171}
+.tab-bar{display:flex;gap:4px;background:rgba(10,15,26,0.7);padding:4px;border-radius:var(--radius-lg);margin-bottom:1.75rem;border:1px solid var(--border);backdrop-filter:blur(10px)}
+.tab{flex:1;padding:8px 12px;font-size:13px;font-weight:500;border:none;border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab.active{background:rgba(26,34,54,0.9);color:var(--text);border:1px solid var(--border2)}
+.tab:hover:not(.active){background:rgba(255,255,255,.04)}
+.progress-bar{height:5px;background:rgba(30,45,69,.8);border-radius:3px;margin-top:8px;overflow:hidden}
 .progress-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .4s}
-.submission-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.submission-row{background:rgba(11,17,30,0.78);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(8px)}
 .results-table{width:100%;border-collapse:collapse;font-size:13px}
 .results-table th{text-align:left;padding:10px 14px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
 .results-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text)}
 .results-table tr:last-child td{border-bottom:none}
-.results-table tr:hover td{background:var(--surface2)}
-.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-start;justify-content:center;padding:60px 1rem 2rem;z-index:200;backdrop-filter:blur(2px)}
-.modal{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border2);padding:1.5rem;width:100%;max-width:580px;max-height:85vh;overflow-y:auto}
+.results-table tr:hover td{background:rgba(26,34,54,0.5)}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-start;justify-content:center;padding:60px 1rem 2rem;z-index:200;backdrop-filter:blur(4px)}
+.modal{background:rgba(11,17,30,0.96);border-radius:var(--radius-lg);border:1px solid var(--border2);padding:1.5rem;width:100%;max-width:580px;max-height:85vh;overflow-y:auto;backdrop-filter:blur(20px)}
 .score-circle{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:0 auto 1.25rem;border:3px solid}
-.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:var(--bg)}
-.auth-box{width:100%;max-width:420px}
-.auth-logo{text-align:center;margin-bottom:2rem}
-.logo-icon{width:60px;height:60px;background:var(--blue-dark);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.logo-icon i{font-size:30px;color:#fff}
 .timer-display{font-size:15px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums;letter-spacing:1px}
-.timer-display.warn{color:#e8a63a}.timer-display.danger{color:#f07170}
+.timer-display.warn{color:var(--amber)}.timer-display.danger{color:var(--red)}
 .empty-state{text-align:center;padding:3rem 1rem;color:var(--text2)}
 .empty-state i{font-size:40px;color:var(--text3);margin-bottom:12px;display:block}
 .spinner{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--text2)}
+.loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--text2);position:relative;z-index:1}
 .loading-screen .spinner{width:36px;height:36px;border-width:3px}
-.info-box{background:rgba(55,138,221,.08);border:1px solid rgba(55,138,221,.25);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:#7ab5ef;line-height:1.5}
+.info-box{background:rgba(74,158,255,.06);border:1px solid rgba(74,158,255,.2);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:#7ab5ff;line-height:1.5}
+
+/* AUTH PAGE */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;z-index:1}
+.auth-box{width:100%;max-width:420px}
+.auth-logo{text-align:center;margin-bottom:2rem}
+.logo-icon{width:64px;height:64px;background:linear-gradient(135deg,#1a5fb4,#0d3d7a);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 0 30px rgba(74,158,255,.25),0 0 60px rgba(74,158,255,.1)}
+.logo-icon i{font-size:32px;color:#fff}
+.logo-title{font-size:26px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,#e2e8f8,#7ab5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-sub{color:var(--text2);margin-top:6px;font-size:14px}
+
 @media(max-width:600px){
   .grid-2{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr 1fr}
   .exam-card{flex-direction:column;align-items:flex-start}
@@ -109,36 +122,34 @@ select option{background:var(--surface2)}
 </head>
 <body>
 
+<canvas id="science-bg"></canvas>
+
 <!-- LOADING -->
 <div id="screen-loading" class="loading-screen">
   <div class="spinner"></div>
-  <span>Loading ExamDesk...</span>
+  <span style="font-size:14px">Loading ExamDesk...</span>
 </div>
 
 <!-- AUTH -->
-<div id="screen-auth" class="hidden">
+<div id="screen-auth" class="hidden screen-wrap">
   <div class="auth-wrap">
     <div class="auth-box">
       <div class="auth-logo">
         <div class="logo-icon"><i class="ti ti-school"></i></div>
-        <h1 style="font-size:24px;font-weight:700;letter-spacing:-.5px">ExamDesk</h1>
-        <p style="color:var(--text2);margin-top:6px;font-size:14px">Online examination platform</p>
+        <div class="logo-title">ExamDesk</div>
+        <div class="logo-sub">Online examination platform</div>
       </div>
       <div class="card">
         <div class="tab-bar" id="auth-tabs">
           <button class="tab active" onclick="switchAuthTab('login')"><i class="ti ti-login"></i> Sign in</button>
           <button class="tab" onclick="switchAuthTab('register')"><i class="ti ti-user-plus"></i> Create account</button>
         </div>
-
-        <!-- LOGIN -->
         <div id="auth-login">
-          <div class="mb-12"><div class="label">Email</div><input type="email" id="login-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
-          <div class="mb-16"><div class="label">Password</div><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+          <div class="mb-12"><div class="label">Email</div><input type="email" id="login-email" placeholder="your@email.com"></div>
+          <div class="mb-16"><div class="label">Password</div><input type="password" id="login-pass" placeholder="••••••••"></div>
           <div id="login-error" class="text-error mb-12 hidden"></div>
           <button class="btn btn-primary" id="login-btn" style="width:100%;justify-content:center" onclick="doLogin()"><i class="ti ti-login"></i> Sign in</button>
         </div>
-
-        <!-- REGISTER -->
         <div id="auth-register" class="hidden">
           <div class="mb-12"><div class="label">Full name</div><input type="text" id="reg-name" placeholder="Your full name"></div>
           <div class="mb-12"><div class="label">Email</div><input type="email" id="reg-email" placeholder="your@email.com"></div>
@@ -164,7 +175,7 @@ select option{background:var(--surface2)}
 </div>
 
 <!-- ADMIN -->
-<div id="screen-admin" class="hidden">
+<div id="screen-admin" class="hidden screen-wrap">
   <nav class="nav">
     <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk <span class="badge badge-blue">Admin</span></div>
     <div class="nav-right">
@@ -187,7 +198,7 @@ select option{background:var(--surface2)}
 </div>
 
 <!-- STUDENT -->
-<div id="screen-student" class="hidden">
+<div id="screen-student" class="hidden screen-wrap">
   <nav class="nav">
     <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk</div>
     <div class="nav-right">
@@ -206,7 +217,7 @@ select option{background:var(--surface2)}
 </div>
 
 <!-- TAKE EXAM -->
-<div id="screen-take-exam" class="hidden">
+<div id="screen-take-exam" class="hidden screen-wrap">
   <nav class="nav">
     <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk</div>
     <div class="nav-right">
@@ -231,7 +242,7 @@ select option{background:var(--surface2)}
 </div>
 
 <!-- RESULT -->
-<div id="screen-result" class="hidden">
+<div id="screen-result" class="hidden screen-wrap">
   <nav class="nav">
     <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk</div>
     <div class="nav-right"><button class="btn btn-sm" onclick="goBackToDashboard()"><i class="ti ti-arrow-left"></i> Back</button></div>
@@ -239,7 +250,7 @@ select option{background:var(--surface2)}
   <div class="page" style="max-width:700px"><div id="result-content"></div></div>
 </div>
 
-<!-- MODAL: CREATE/EDIT EXAM -->
+<!-- MODAL: EXAM -->
 <div id="modal-create-exam" class="hidden">
   <div class="modal-overlay" onclick="overlayClose(event,'modal-create-exam')">
     <div class="modal" onclick="event.stopPropagation()">
@@ -283,7 +294,7 @@ select option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- MODAL: VIEW SUBMISSION -->
+<!-- MODAL: SUBMISSION -->
 <div id="modal-view-submission" class="hidden">
   <div class="modal-overlay" onclick="overlayClose(event,'modal-view-submission')">
     <div class="modal" onclick="event.stopPropagation()">
@@ -297,12 +308,10 @@ select option{background:var(--surface2)}
 </div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────
+// ── CONFIG ──────────────────────────────────────────────
 const SUPABASE_URL = 'https://szqzdrcdsmilnzjatljd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_RnvYMUWR_cKwZvfxaDyMAA_Pqx02sCz';
-// Admin code is stored server-side and validated here only as a gate.
-// Change this to any secret phrase you want.
-const ADMIN_CODE = 'EXAM-ADMIN-2024';
+const ADMIN_CODE   = 'EXAM-ADMIN-2024';
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -311,31 +320,272 @@ let session=null, profile=null, currentExam=null;
 let examAnswers={}, timerInterval=null;
 let editingExamId=null, draftQuestions=[];
 
-const el  = id => document.getElementById(id);
+const el   = id => document.getElementById(id);
 const show = id => el(id).classList.remove('hidden');
 const hide = id => el(id).classList.add('hidden');
 const hideAll = (...ids) => ids.forEach(hide);
-const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
+const uid  = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
 const qTypeLabel = t => ({mcq:'MCQ',truefalse:'True/False',short:'Short answer',essay:'Essay'}[t]||t);
 function overlayClose(e,id){if(e.target===e.currentTarget)closeModal(id);}
 function closeModal(id){hide(id);}
-
-function setBtn(id, loading, label){
+function loadingDiv(){return '<div style="padding:3rem;text-align:center"><div class="spinner" style="width:30px;height:30px;border-width:3px;margin:auto"></div></div>';}
+function setBtn(id,loading,label){
   const b=el(id); if(!b)return;
   b.disabled=loading;
-  b.innerHTML=loading?'<span class="spinner"></span> Please wait...':label;
+  b.innerHTML=loading?'<span class="spinner"></span>&nbsp;Please wait...':label;
 }
 
-// ─── INIT ─────────────────────────────────────────────────
-(async()=>{
-  const{data:{session:s}}=await sb.auth.getSession();
-  if(s){ session=s; await loadProfile(); }
-  else { hide('screen-loading'); show('screen-auth'); }
+// ── SCIENCE BACKGROUND ──────────────────────────────────
+(function(){
+  const canvas=document.getElementById('science-bg');
+  const ctx=canvas.getContext('2d');
+  let W,H,nodes=[],particles=[],formulas=[],orbits=[];
+  const COLORS=['#1a5fb4','#0d7a4a','#7a1a5f','#7a5f1a','#1a5f7a','#5f1a7a'];
 
-  sb.auth.onAuthStateChange(async(_,s)=>{
+  const SCIENCE_SYMBOLS=[
+    'E=mc²','∇×B=μ₀J','F=ma','PV=nRT','ΔG=ΔH-TΔS',
+    'λ=h/mv','∮E·dA=Q/ε₀','H₂O','DNA','ATP',
+    'π','∞','∑','∫','∂','∇','α','β','γ','Ω',
+    'Fe','CO₂','NaCl','C₆H₁₂O₆','NH₃',
+    '6.022×10²³','9.8m/s²','3×10⁸m/s',
+    'sin²θ+cos²θ=1','a²+b²=c²'
+  ];
+
+  function resize(){
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
+    init();
+  }
+
+  function init(){
+    nodes=[]; particles=[]; formulas=[]; orbits=[];
+
+    // Network nodes (neurons / molecules)
+    const nodeCount=Math.floor((W*H)/22000);
+    for(let i=0;i<nodeCount;i++){
+      nodes.push({
+        x:Math.random()*W, y:Math.random()*H,
+        vx:(Math.random()-.5)*0.3, vy:(Math.random()-.5)*0.3,
+        r:Math.random()*2.5+1,
+        color:COLORS[Math.floor(Math.random()*COLORS.length)],
+        pulse:Math.random()*Math.PI*2
+      });
+    }
+
+    // Floating formula/symbol labels
+    const fCount=Math.floor((W*H)/80000);
+    for(let i=0;i<fCount;i++){
+      formulas.push({
+        x:Math.random()*W, y:Math.random()*H,
+        vx:(Math.random()-.5)*0.18, vy:(Math.random()-.5)*0.18,
+        text:SCIENCE_SYMBOLS[Math.floor(Math.random()*SCIENCE_SYMBOLS.length)],
+        size:Math.random()*8+10,
+        alpha:Math.random()*0.3+0.08,
+        color:COLORS[Math.floor(Math.random()*COLORS.length)]
+      });
+    }
+
+    // Atom orbits
+    const aCount=Math.floor((W*H)/120000)+2;
+    for(let i=0;i<aCount;i++){
+      const cx=Math.random()*W, cy=Math.random()*H;
+      const electrons=Math.floor(Math.random()*3)+2;
+      const rings=[];
+      for(let r=0;r<electrons;r++){
+        rings.push({
+          rx: 30+r*18+Math.random()*10,
+          ry: 14+r*8+Math.random()*5,
+          angle: Math.random()*Math.PI,
+          tilt: Math.random()*Math.PI,
+          speed: (Math.random()*0.008+0.004)*(Math.random()<.5?1:-1),
+          eAngle: Math.random()*Math.PI*2
+        });
+      }
+      orbits.push({cx,cy,rings,color:COLORS[Math.floor(Math.random()*COLORS.length)]});
+    }
+
+    // DNA helix strands
+    particles=[];
+    const helices=Math.floor((W*H)/150000)+1;
+    for(let h=0;h<helices;h++){
+      particles.push({
+        type:'helix',
+        x:Math.random()*W, y:Math.random()*H,
+        height:80+Math.random()*60,
+        width:18+Math.random()*10,
+        phase:Math.random()*Math.PI*2,
+        speed:0.005+Math.random()*0.005,
+        t:0,
+        color:COLORS[Math.floor(Math.random()*COLORS.length)]
+      });
+    }
+  }
+
+  let raf=0, tick=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    tick++;
+
+    // Draw connections between nearby nodes
+    ctx.lineWidth=0.4;
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<130){
+          const alpha=0.12*(1-dist/130);
+          ctx.strokeStyle=`rgba(74,158,255,${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x,nodes[i].y);
+          ctx.lineTo(nodes[j].x,nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw & move nodes
+    nodes.forEach(n=>{
+      n.x+=n.vx; n.y+=n.vy;
+      n.pulse+=0.03;
+      if(n.x<0||n.x>W) n.vx*=-1;
+      if(n.y<0||n.y>H) n.vy*=-1;
+      const glow=1+Math.sin(n.pulse)*0.3;
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,n.r*glow,0,Math.PI*2);
+      ctx.fillStyle=n.color;
+      ctx.globalAlpha=0.65;
+      ctx.fill();
+      ctx.globalAlpha=1;
+    });
+
+    // Draw atom orbits
+    orbits.forEach(a=>{
+      // Nucleus
+      ctx.beginPath();
+      ctx.arc(a.cx,a.cy,4,0,Math.PI*2);
+      ctx.fillStyle=a.color;
+      ctx.globalAlpha=0.5;
+      ctx.fill();
+      ctx.globalAlpha=1;
+
+      a.rings.forEach(ring=>{
+        ring.eAngle+=ring.speed;
+        // Draw ellipse
+        ctx.save();
+        ctx.translate(a.cx,a.cy);
+        ctx.rotate(ring.tilt);
+        ctx.beginPath();
+        ctx.ellipse(0,0,ring.rx,ring.ry,ring.angle,0,Math.PI*2);
+        ctx.strokeStyle=a.color;
+        ctx.globalAlpha=0.18;
+        ctx.lineWidth=0.8;
+        ctx.stroke();
+        ctx.globalAlpha=1;
+
+        // Electron
+        const ex=Math.cos(ring.eAngle)*ring.rx;
+        const ey=Math.sin(ring.eAngle)*ring.ry;
+        ctx.beginPath();
+        ctx.arc(ex,ey,2.5,0,Math.PI*2);
+        ctx.fillStyle='#4a9eff';
+        ctx.globalAlpha=0.7;
+        ctx.fill();
+        ctx.globalAlpha=1;
+        ctx.restore();
+      });
+    });
+
+    // Draw DNA helices
+    particles.forEach(p=>{
+      if(p.type==='helix'){
+        p.t+=p.speed;
+        const steps=20;
+        for(let s=0;s<=steps;s++){
+          const yy=p.y-p.height/2+s*(p.height/steps);
+          const angle1=p.t+s*(Math.PI*2/steps);
+          const angle2=angle1+Math.PI;
+          const x1=p.x+Math.cos(angle1)*p.width;
+          const x2=p.x+Math.cos(angle2)*p.width;
+          // strand 1
+          if(s>0){
+            ctx.strokeStyle=p.color;
+            ctx.globalAlpha=0.22;
+            ctx.lineWidth=1.2;
+            ctx.beginPath();
+            const prevY=p.y-p.height/2+(s-1)*(p.height/steps);
+            const pa1=p.t+(s-1)*(Math.PI*2/steps);
+            ctx.moveTo(p.x+Math.cos(pa1)*p.width,prevY);
+            ctx.lineTo(x1,yy);
+            ctx.stroke();
+            ctx.globalAlpha=1;
+          }
+          // base pair rungs
+          if(s%3===0){
+            ctx.strokeStyle='rgba(74,222,128,0.2)';
+            ctx.lineWidth=0.8;
+            ctx.beginPath();
+            ctx.moveTo(x1,yy);
+            ctx.lineTo(x2,yy);
+            ctx.stroke();
+          }
+          // dots on strand
+          ctx.beginPath();
+          ctx.arc(x1,yy,1.5,0,Math.PI*2);
+          ctx.fillStyle=p.color;
+          ctx.globalAlpha=0.5;
+          ctx.fill();
+          ctx.globalAlpha=1;
+        }
+        // Float upward slowly, reset
+        p.y-=0.12;
+        if(p.y<-p.height) p.y=H+p.height;
+      }
+    });
+
+    // Draw floating formulas
+    formulas.forEach(f=>{
+      f.x+=f.vx; f.y+=f.vy;
+      if(f.x<-100) f.x=W+50;
+      if(f.x>W+100) f.x=-50;
+      if(f.y<-30) f.y=H+20;
+      if(f.y>H+30) f.y=-20;
+      ctx.font=`${f.size}px 'Courier New', monospace`;
+      ctx.fillStyle=f.color;
+      ctx.globalAlpha=f.alpha;
+      ctx.fillText(f.text,f.x,f.y);
+      ctx.globalAlpha=1;
+    });
+
+    raf=requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize',()=>{cancelAnimationFrame(raf);resize();draw();});
+  resize(); draw();
+})();
+
+// ── INIT ────────────────────────────────────────────────
+(async function init(){
+  try{
+    const{data:{session:s}, error}=await sb.auth.getSession();
+    if(error) throw error;
+    if(s){
+      session=s;
+      await loadProfile();
+    } else {
+      hide('screen-loading');
+      show('screen-auth');
+    }
+  }catch(e){
+    console.error('Init error:',e);
+    hide('screen-loading');
+    show('screen-auth');
+  }
+
+  sb.auth.onAuthStateChange(async(event,s)=>{
     session=s;
-    if(s){ await loadProfile(); }
-    else{
+    if(s){
+      await loadProfile();
+    } else {
       profile=null;
       hideAll('screen-admin','screen-student','screen-take-exam','screen-result');
       show('screen-auth');
@@ -344,15 +594,16 @@ function setBtn(id, loading, label){
 })();
 
 async function loadProfile(){
-  const{data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
-  hide('screen-loading');
-  if(error || !data){
-    // Profile may not exist yet (e.g. after email confirmation). Show auth.
+  try{
+    const{data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
+    hide('screen-loading');
+    if(error||!data){ show('screen-auth'); return; }
+    profile=data;
+    renderScreen();
+  }catch(e){
+    hide('screen-loading');
     show('screen-auth');
-    return;
   }
-  profile=data;
-  renderScreen();
 }
 
 function renderScreen(){
@@ -366,12 +617,13 @@ function renderScreen(){
   }
 }
 
-// ─── AUTH ─────────────────────────────────────────────────
+// ── AUTH ────────────────────────────────────────────────
 function switchAuthTab(t){
   el('auth-login').classList.toggle('hidden', t!=='login');
   el('auth-register').classList.toggle('hidden', t!=='register');
   el('auth-tabs').querySelectorAll('.tab').forEach((b,i)=>
     b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
+  hide('login-error'); hide('reg-error'); hide('reg-success');
 }
 function toggleAdminCode(){
   el('admin-code-row').classList.toggle('hidden', el('reg-role').value!=='admin');
@@ -381,15 +633,30 @@ async function doLogin(){
   const email=el('login-email').value.trim().toLowerCase();
   const pass=el('login-pass').value;
   hide('login-error');
-  if(!email||!pass){el('login-error').textContent='Enter your email and password.';show('login-error');return;}
+  if(!email||!pass){
+    el('login-error').textContent='Please enter your email and password.';
+    show('login-error'); return;
+  }
   setBtn('login-btn',true,'');
-  const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  setBtn('login-btn',false,'<i class="ti ti-login"></i> Sign in');
-  if(error){
-    const msg = error.message.includes('Invalid login')
-      ? 'Incorrect email or password. Please try again.'
-      : error.message;
-    el('login-error').textContent=msg; show('login-error');
+  try{
+    const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error){
+      let msg=error.message;
+      if(msg.includes('Invalid login credentials')||msg.includes('invalid_credentials')){
+        msg='Incorrect email or password. Please try again.';
+      } else if(msg.includes('Email not confirmed')){
+        msg='Please confirm your email address first. Check your inbox.';
+      }
+      el('login-error').textContent=msg;
+      show('login-error');
+      setBtn('login-btn',false,'<i class="ti ti-login"></i> Sign in');
+      return;
+    }
+    // onAuthStateChange will handle navigation
+  }catch(e){
+    el('login-error').textContent='Connection error. Please try again.';
+    show('login-error');
+    setBtn('login-btn',false,'<i class="ti ti-login"></i> Sign in');
   }
 }
 
@@ -401,83 +668,64 @@ async function doRegister(){
   const code  = el('reg-admin-code').value.trim();
   hide('reg-error'); hide('reg-success');
 
-  // Client-side validation
   if(!name||!email||!pass){ showRegErr('Please fill in all fields.'); return; }
   if(pass.length<6){ showRegErr('Password must be at least 6 characters.'); return; }
-  if(role==='admin' && code!==ADMIN_CODE){ showRegErr('Incorrect admin code. Contact your system administrator.'); return; }
+  if(role==='admin'&&code!==ADMIN_CODE){ showRegErr('Incorrect admin code.'); return; }
 
   setBtn('reg-btn',true,'');
-
-  // Step 1: create auth user
-  const{data,error}=await sb.auth.signUp({email,password:pass});
-
-  if(error){
-    // Common errors with friendly messages
-    let msg=error.message;
-    if(msg.includes('already registered') || msg.includes('already been registered')){
-      msg='This email is already registered. Please sign in instead.';
-    } else if(msg.includes('valid email')){
-      msg='Please enter a valid email address.';
-    } else if(msg.includes('Password')){
-      msg='Password is too weak. Use at least 6 characters.';
+  try{
+    const{data,error}=await sb.auth.signUp({email,password:pass});
+    if(error){
+      let msg=error.message;
+      if(msg.includes('already registered')||msg.includes('already been registered')||msg.includes('User already registered')){
+        msg='This email is already registered. Please sign in instead.';
+      }
+      showRegErr(msg);
+      setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
+      return;
     }
-    showRegErr(msg);
+    if(!data.user){
+      showRegErr('Registration failed. Please try again.');
+      setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
+      return;
+    }
+    const{error:pe}=await sb.from('profiles').insert({id:data.user.id,name,role});
+    if(pe){
+      showRegErr('Account created but profile setup failed: '+pe.message);
+      setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
+      return;
+    }
     setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
-    return;
-  }
-
-  if(!data.user){
-    showRegErr('Registration failed. Please try again.');
-    setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
-    return;
-  }
-
-  // Step 2: insert profile row
-  const{error:pe}=await sb.from('profiles').insert({id:data.user.id, name, role});
-
-  if(pe){
-    // If profile insert fails with duplicate, user already exists
-    if(pe.code==='23505'){
-      showRegErr('This email is already registered. Please sign in.');
+    if(data.session){
+      session=data.session;
+      profile={id:data.user.id,name,role};
+      renderScreen();
     } else {
-      showRegErr('Account created but profile setup failed: '+pe.message+'. Please contact support.');
+      el('reg-success').textContent='Account created! Check your email and click the confirmation link, then sign in.';
+      show('reg-success');
+      el('reg-name').value=''; el('reg-email').value='';
+      el('reg-pass').value=''; el('reg-admin-code').value='';
     }
+  }catch(e){
+    showRegErr('Connection error. Please try again.');
     setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
-    return;
-  }
-
-  setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
-
-  // Step 3: if Supabase auto-confirmed (no email confirmation required), session is active
-  if(data.session){
-    session=data.session;
-    profile={id:data.user.id,name,role};
-    renderScreen();
-  } else {
-    // Email confirmation is required
-    el('reg-success').textContent='Account created! Check your email inbox and click the confirmation link, then come back and sign in.';
-    show('reg-success');
-    el('reg-name').value='';el('reg-email').value='';el('reg-pass').value='';
-    el('reg-admin-code').value='';
   }
 }
 
 function showRegErr(msg){ el('reg-error').textContent=msg; show('reg-error'); }
 async function doLogout(){ clearInterval(timerInterval); await sb.auth.signOut(); }
 
-// ─── ADMIN TABS ───────────────────────────────────────────
+// ── ADMIN TABS ──────────────────────────────────────────
 function adminTab(t){
   ['dashboard','exams','students','results'].forEach(s=>hide('admin-'+s));
   show('admin-'+t);
   el('admin-main-tabs').querySelectorAll('.tab').forEach((b,i)=>
     b.classList.toggle('active',['dashboard','exams','students','results'][i]===t));
-  if(t==='dashboard')renderAdminDashboard();
-  if(t==='exams')renderAdminExams();
-  if(t==='students')renderStudents();
-  if(t==='results')renderAllResults();
+  if(t==='dashboard') renderAdminDashboard();
+  if(t==='exams')     renderAdminExams();
+  if(t==='students')  renderStudents();
+  if(t==='results')   renderAllResults();
 }
-
-function loadingDiv(){ return '<div class="loading-screen" style="min-height:200px"><div class="spinner"></div></div>'; }
 
 async function renderAdminDashboard(){
   el('admin-dashboard').innerHTML=loadingDiv();
@@ -497,12 +745,12 @@ async function renderAdminDashboard(){
       <h2 style="font-size:16px;font-weight:600">Recent exams</h2>
       <button class="btn btn-sm btn-primary" onclick="openCreateExam()"><i class="ti ti-plus"></i> New exam</button>
     </div>
-    ${recent&&recent.length ? recent.map(examCardHTML).join('') : '<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet.</p></div>'}`;
+    ${recent&&recent.length?recent.map(examCardHTML).join(''):'<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet.</p></div>'}`;
 }
 
 function examCardHTML(e){
   const badge=e.status==='active'?'badge-green':'badge-gray';
-  return `<div class="exam-card">
+  return`<div class="exam-card">
     <div style="flex:1;min-width:0">
       <div style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.title}</div>
       <div class="text-xs mt-4">${(e.questions||[]).length} questions &middot; ${e.duration} min &middot; Pass ${e.passmark}% &middot; <span class="badge ${badge}" style="font-size:10px">${e.status}</span></div>
@@ -523,7 +771,7 @@ async function renderAdminExams(){
       <h2 style="font-size:16px;font-weight:600">All exams (${exams?exams.length:0})</h2>
       <button class="btn btn-sm btn-primary" onclick="openCreateExam()"><i class="ti ti-plus"></i> New exam</button>
     </div>
-    ${exams&&exams.length ? exams.map(examCardHTML).join('') : '<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet. Create your first one.</p></div>'}`;
+    ${exams&&exams.length?exams.map(examCardHTML).join(''):'<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet.</p></div>'}`;
 }
 
 async function toggleStatus(id,current){
@@ -545,24 +793,24 @@ async function renderStudents(){
   ]);
   el('admin-students').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">Students (${students?students.length:0})</h2>`+
     (students&&students.length
-      ? `<table class="results-table"><thead><tr><th>Name</th><th>Exams taken</th><th>Avg score</th><th>Joined</th></tr></thead><tbody>`+
+      ?`<table class="results-table"><thead><tr><th>Name</th><th>Exams taken</th><th>Avg score</th><th>Joined</th></tr></thead><tbody>`+
         students.map(s=>{
           const ms=(subs||[]).filter(x=>x.student_id===s.id&&x.auto_score!=null);
-          const avg=ms.length ? Math.round(ms.reduce((a,b)=>a+(b.auto_score||0),0)/ms.length)+'%' : '—';
-          return `<tr><td><strong>${s.name}</strong></td><td>${(subs||[]).filter(x=>x.student_id===s.id).length}</td><td>${avg}</td><td>${new Date(s.created_at).toLocaleDateString()}</td></tr>`;
+          const avg=ms.length?Math.round(ms.reduce((a,b)=>a+(b.auto_score||0),0)/ms.length)+'%':'—';
+          return`<tr><td><strong>${s.name}</strong></td><td>${(subs||[]).filter(x=>x.student_id===s.id).length}</td><td>${avg}</td><td>${new Date(s.created_at).toLocaleDateString()}</td></tr>`;
         }).join('')+'</tbody></table>'
-      : '<div class="empty-state"><i class="ti ti-users-off"></i><p>No students yet.</p></div>');
+      :'<div class="empty-state"><i class="ti ti-users-off"></i><p>No students yet.</p></div>');
 }
 
 async function renderAllResults(){
   el('admin-results').innerHTML=loadingDiv();
   const{data:subs}=await sb.from('submissions').select('*,profiles(name),exams(title,passmark)').order('submitted_at',{ascending:false}).limit(500);
   el('admin-results').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">All submissions (${subs?subs.length:0})</h2>`+
-    (subs&&subs.length ? subs.map(s=>{
+    (subs&&subs.length?subs.map(s=>{
       const pm=s.exams?s.exams.passmark||50:50;
       const pass=s.auto_score!=null&&s.auto_score>=pm;
       const badge=s.auto_score!=null?(pass?'badge-green':'badge-red'):'badge-amber';
-      return `<div class="submission-row">
+      return`<div class="submission-row">
         <div>
           <div style="font-size:14px;font-weight:600">${s.profiles?s.profiles.name:'Unknown'}</div>
           <div class="text-xs mt-4">${s.exams?s.exams.title:'Deleted exam'} &middot; ${new Date(s.submitted_at).toLocaleString()}</div>
@@ -572,7 +820,7 @@ async function renderAllResults(){
           <button class="btn btn-sm" onclick="viewSubmission('${s.id}')"><i class="ti ti-eye"></i> Review</button>
         </div>
       </div>`;
-    }).join('') : '<div class="empty-state"><i class="ti ti-chart-off"></i><p>No submissions yet.</p></div>');
+    }).join(''):'<div class="empty-state"><i class="ti ti-chart-off"></i><p>No submissions yet.</p></div>');
 }
 
 async function viewSubmission(sid){
@@ -590,17 +838,15 @@ async function viewSubmission(sid){
       if(q.type==='mcq'){
         q.options.forEach((o,oi)=>{
           const isAns=String(ans)===String(oi),isCorrect=String(q.correct)===String(oi);
-          const cls=isCorrect?'correct':(isAns?'wrong':'');
-          html+=`<div class="option-row ${cls}">${isCorrect?'<i class="ti ti-check"></i>':isAns?'<i class="ti ti-x"></i>':'<span style="width:16px;display:inline-block"></span>'} ${o}</div>`;
+          html+=`<div class="option-row ${isCorrect?'correct':(isAns?'wrong':'')}">${isCorrect?'<i class="ti ti-check"></i>':isAns?'<i class="ti ti-x"></i>':'<span style="width:16px;display:inline-block"></span>'} ${o}</div>`;
         });
       }else if(q.type==='truefalse'){
         ['True','False'].forEach((o,oi)=>{
           const isAns=String(ans)===String(oi),isCorrect=String(q.correct)===String(oi);
-          const cls=isCorrect?'correct':(isAns?'wrong':'');
-          html+=`<div class="option-row ${cls}">${isCorrect?'<i class="ti ti-check"></i>':isAns?'<i class="ti ti-x"></i>':'<span style="width:16px;display:inline-block"></span>'} ${o}</div>`;
+          html+=`<div class="option-row ${isCorrect?'correct':(isAns?'wrong':'')}">${isCorrect?'<i class="ti ti-check"></i>':isAns?'<i class="ti ti-x"></i>':'<span style="width:16px;display:inline-block"></span>'} ${o}</div>`;
         });
       }else{
-        html+=`<div style="background:var(--surface2);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:4px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer</em>'}</div>`;
+        html+=`<div style="background:rgba(10,18,35,0.8);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:4px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer</em>'}</div>`;
         if(q.type==='short'&&q.modelAnswer)html+=`<div class="text-xs mt-8"><strong>Model answer:</strong> ${q.modelAnswer}</div>`;
       }
       html+='</div>';
@@ -610,7 +856,7 @@ async function viewSubmission(sid){
   show('modal-view-submission');
 }
 
-// ─── EXAM BUILDER ─────────────────────────────────────────
+// ── EXAM BUILDER ────────────────────────────────────────
 function openCreateExam(){
   editingExamId=null; draftQuestions=[];
   el('exam-title-input').value=''; el('exam-desc-input').value='';
@@ -633,10 +879,7 @@ function addQuestion(){
   const t=el('add-q-type').value;
   draftQuestions.push({id:uid(),type:t,text:'',options:t==='mcq'?['','','','']:undefined,correct:0,modelAnswer:''});
   renderQEditor();
-  setTimeout(()=>{
-    const blocks=el('questions-editor').querySelectorAll('.question-block');
-    if(blocks.length)blocks[blocks.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});
-  },100);
+  setTimeout(()=>{const b=el('questions-editor').querySelectorAll('.question-block');if(b.length)b[b.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});},100);
 }
 
 function renderQEditor(){
@@ -655,13 +898,13 @@ function renderQEditor(){
       inner=`<div class="flex gap-24">
         <label class="flex align-center gap-8" style="cursor:pointer"><input type="radio" name="tf_${q.id}" ${q.correct==0?'checked':''} onchange="setCorrect('${q.id}',0)" style="width:auto"> True</label>
         <label class="flex align-center gap-8" style="cursor:pointer"><input type="radio" name="tf_${q.id}" ${q.correct==1?'checked':''} onchange="setCorrect('${q.id}',1)" style="width:auto"> False</label>
-      </div><div class="text-xs mt-8">Select the correct answer above</div>`;
+      </div><div class="text-xs mt-8">Select the correct answer</div>`;
     }else if(q.type==='short'){
       inner=`<div class="mt-8"><div class="label">Model answer</div><input type="text" value="${(q.modelAnswer||'').replace(/"/g,'&quot;')}" placeholder="Expected answer..." oninput="setModelAnswer('${q.id}',this.value)"></div>`;
     }else{
       inner=`<div class="info-box mt-8" style="font-size:12px">Essay — student writes a long response. Reviewed manually by admin.</div>`;
     }
-    return `<div class="question-block mb-12" style="border-color:var(--border2)">
+    return`<div class="question-block mb-12" style="border-color:var(--border2)">
       <div class="flex justify-between align-center mb-10">
         <div class="flex gap-8 align-center"><span class="badge badge-blue">Q${i+1}</span><span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div>
         <button class="btn btn-sm btn-danger" onclick="removeQuestion('${q.id}')"><i class="ti ti-trash"></i></button>
@@ -681,11 +924,11 @@ function removeOption(id,oi){const q=draftQuestions.find(q=>q.id===id);q.options
 function removeQuestion(id){draftQuestions=draftQuestions.filter(q=>q.id!==id);renderQEditor();}
 
 async function saveExam(){
-  const title    = el('exam-title-input').value.trim();
-  const duration = parseInt(el('exam-duration-input').value)||60;
-  const passmark = parseInt(el('exam-pass-input').value)||50;
-  const status   = el('exam-status-input').value;
-  const description = el('exam-desc-input').value.trim();
+  const title=el('exam-title-input').value.trim();
+  const duration=parseInt(el('exam-duration-input').value)||60;
+  const passmark=parseInt(el('exam-pass-input').value)||50;
+  const status=el('exam-status-input').value;
+  const description=el('exam-desc-input').value.trim();
   hide('modal-exam-error');
   if(!title){el('modal-exam-error').textContent='Exam title is required.';show('modal-exam-error');return;}
   if(!draftQuestions.length){el('modal-exam-error').textContent='Add at least one question.';show('modal-exam-error');return;}
@@ -704,16 +947,15 @@ async function saveExam(){
   }
   setBtn('save-exam-btn',false,'<i class="ti ti-device-floppy"></i> Save exam');
   if(error){el('modal-exam-error').textContent='Save failed: '+error.message;show('modal-exam-error');return;}
-  closeModal('modal-create-exam');
-  renderAdminExams();
+  closeModal('modal-create-exam'); renderAdminExams();
 }
 
-// ─── STUDENT ──────────────────────────────────────────────
+// ── STUDENT ─────────────────────────────────────────────
 function studentTab(t){
   ['exams','myresults'].forEach(s=>hide('student-'+s)); show('student-'+t);
   el('student-tabs').querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',i===(t==='exams'?0:1)));
-  if(t==='exams')renderStudentExams();
-  if(t==='myresults')renderMyResults();
+  if(t==='exams')    renderStudentExams();
+  if(t==='myresults') renderMyResults();
 }
 
 async function renderStudentExams(){
@@ -723,10 +965,10 @@ async function renderStudentExams(){
     sb.from('submissions').select('exam_id,id,auto_score').eq('student_id',session.user.id)
   ]);
   const subMap={};(mySubs||[]).forEach(s=>subMap[s.exam_id]=s);
-  el('student-exams').innerHTML=exams&&exams.length ? exams.map(e=>{
+  el('student-exams').innerHTML=exams&&exams.length?exams.map(e=>{
     const sub=subMap[e.id]; const taken=!!sub;
     const pm=e.passmark||50; const pass=sub&&sub.auto_score!=null&&sub.auto_score>=pm;
-    return `<div class="exam-card">
+    return`<div class="exam-card">
       <div style="flex:1;min-width:0">
         <div style="font-size:15px;font-weight:600">${e.title}</div>
         <div class="text-xs mt-4">${e.description?e.description+' &middot; ':''} ${(e.questions||[]).length} questions &middot; ${e.duration} min &middot; Pass: ${pm}%</div>
@@ -738,32 +980,32 @@ async function renderStudentExams(){
           :`<button class="btn btn-sm btn-primary" onclick="startExam('${e.id}')"><i class="ti ti-player-play"></i> Start exam</button>`}
       </div>
     </div>`;
-  }).join('') : '<div class="empty-state"><i class="ti ti-clock"></i><p>No exams available right now. Check back later.</p></div>';
+  }).join(''):'<div class="empty-state"><i class="ti ti-clock"></i><p>No exams available right now.</p></div>';
 }
 
 async function renderMyResults(){
   el('student-myresults').innerHTML=loadingDiv();
   const{data:subs}=await sb.from('submissions').select('*,exams(title,passmark)').eq('student_id',session.user.id).order('submitted_at',{ascending:false});
-  el('student-myresults').innerHTML=subs&&subs.length ? subs.map(s=>{
+  el('student-myresults').innerHTML=subs&&subs.length?subs.map(s=>{
     const pm=s.exams?s.exams.passmark||50:50; const pass=s.auto_score!=null&&s.auto_score>=pm;
     const badge=s.auto_score!=null?(pass?'badge-green':'badge-red'):'badge-amber';
-    return `<div class="submission-row">
+    return`<div class="submission-row">
       <div><div style="font-size:14px;font-weight:600">${s.exams?s.exams.title:'Deleted exam'}</div><div class="text-xs mt-4">${new Date(s.submitted_at).toLocaleString()}</div></div>
       <div class="flex gap-8 align-center">
         <span class="badge ${badge}">${s.auto_score!=null?s.auto_score+'%':'Pending'}</span>
         <button class="btn btn-sm" onclick="viewMyResult('${s.id}')"><i class="ti ti-eye"></i> Review</button>
       </div>
     </div>`;
-  }).join('') : '<div class="empty-state"><i class="ti ti-trophy"></i><p>You have not completed any exams yet.</p></div>';
+  }).join(''):'<div class="empty-state"><i class="ti ti-trophy"></i><p>You have not completed any exams yet.</p></div>';
 }
 
-// ─── EXAM TAKING ──────────────────────────────────────────
+// ── EXAM TAKING ──────────────────────────────────────────
 async function startExam(examId){
   const{data:exam}=await sb.from('exams').select('*').eq('id',examId).single();
   if(!exam)return;
   if(!confirm(`Start "${exam.title}"?\n\nDuration: ${exam.duration} minutes\nQuestions: ${(exam.questions||[]).length}\n\nThe timer starts immediately.`))return;
   currentExam=exam; examAnswers={};
-  hideAll('screen-student'); show('screen-take-exam');
+  hide('screen-student'); show('screen-take-exam');
   el('exam-header').innerHTML=`
     <h1 style="font-size:22px;font-weight:700;margin-bottom:6px">${exam.title}</h1>
     ${exam.description?`<p class="text-sm">${exam.description}</p>`:''}
@@ -772,8 +1014,7 @@ async function startExam(examId){
       <span class="badge badge-amber"><i class="ti ti-clock"></i> ${exam.duration} min</span>
       <span class="badge badge-blue"><i class="ti ti-percentage"></i> Pass: ${exam.passmark||50}%</span>
     </div>`;
-  renderExamQuestions();
-  startTimer(exam.duration*60);
+  renderExamQuestions(); startTimer(exam.duration*60);
 }
 
 function renderExamQuestions(){
@@ -781,17 +1022,11 @@ function renderExamQuestions(){
   updateProgress();
   el('exam-questions').innerHTML=currentExam.questions.map((q,i)=>{
     let opts='';
-    if(q.type==='mcq'){
-      opts=q.options.map((o,oi)=>`<div class="option-row" id="opt_${q.id}_${oi}" onclick="selectOpt('${q.id}',${oi})">${o}</div>`).join('');
-    }else if(q.type==='truefalse'){
-      opts=`<div class="option-row" id="opt_${q.id}_0" onclick="selectOpt('${q.id}',0)">True</div>
-            <div class="option-row" id="opt_${q.id}_1" onclick="selectOpt('${q.id}',1)">False</div>`;
-    }else if(q.type==='short'){
-      opts=`<input type="text" placeholder="Type your answer..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="margin-top:4px">`;
-    }else{
-      opts=`<textarea rows="6" placeholder="Write your answer here..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="width:100%;margin-top:8px;resize:vertical"></textarea>`;
-    }
-    return `<div class="question-block">
+    if(q.type==='mcq'){opts=q.options.map((o,oi)=>`<div class="option-row" id="opt_${q.id}_${oi}" onclick="selectOpt('${q.id}',${oi})">${o}</div>`).join('');}
+    else if(q.type==='truefalse'){opts=`<div class="option-row" id="opt_${q.id}_0" onclick="selectOpt('${q.id}',0)">True</div><div class="option-row" id="opt_${q.id}_1" onclick="selectOpt('${q.id}',1)">False</div>`;}
+    else if(q.type==='short'){opts=`<input type="text" placeholder="Type your answer..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="margin-top:4px">`;}
+    else{opts=`<textarea rows="6" placeholder="Write your answer here..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="width:100%;margin-top:8px;resize:vertical"></textarea>`;}
+    return`<div class="question-block">
       <div class="q-num">Question ${i+1} of ${currentExam.questions.length} <span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div>
       <div class="q-text">${q.text}</div>
       ${opts}
@@ -821,7 +1056,7 @@ function startTimer(seconds){
     const d=el('exam-timer-display');
     d.textContent=m+':'+s;
     d.className='timer-display'+(remaining<=300?' warn':'')+(remaining<=60?' danger':'');
-    if(remaining<=0){clearInterval(timerInterval);alert('Time is up! Your exam will be submitted now.');submitExam();}
+    if(remaining<=0){clearInterval(timerInterval);alert('Time is up! Submitting now.');submitExam();}
     remaining--;
   }
   tick(); timerInterval=setInterval(tick,1000);
@@ -830,8 +1065,8 @@ function startTimer(seconds){
 function confirmSubmit(){
   const answered=currentExam.questions.filter(q=>examAnswers[q.id]!=null&&examAnswers[q.id]!=='').length;
   const unanswered=currentExam.questions.length-answered;
-  const msg=unanswered>0?`You have ${unanswered} unanswered question${unanswered>1?'s':''}.\n\nSubmit anyway?`:'Submit your exam now? This cannot be undone.';
-  if(confirm(msg))submitExam();
+  if(confirm(unanswered>0?`You have ${unanswered} unanswered question${unanswered>1?'s':''}.\n\nSubmit anyway?`:'Submit your exam now? This cannot be undone.'))
+    submitExam();
 }
 
 async function submitExam(){
@@ -855,14 +1090,14 @@ function showResult(sub,exam){
   show('screen-result');
   const pm=exam?exam.passmark||50:50;
   const pass=sub.auto_score!=null&&sub.auto_score>=pm;
-  const sc=sub.auto_score!=null?(pass?'#8fcc40':'#f07170'):'#7ab5ef';
+  const sc=sub.auto_score!=null?(pass?'#4ade80':'#f87171'):'#4a9eff';
   const manual=exam?exam.questions.filter(q=>q.type==='short'||q.type==='essay').length:0;
   let html=`<div class="card mb-24" style="text-align:center">
     <div class="score-circle" style="border-color:${sc}">
       ${sub.auto_score!=null
         ?`<div style="font-size:30px;font-weight:700;color:${sc}">${sub.auto_score}%</div>
            <div style="font-size:11px;font-weight:600;color:${sc};letter-spacing:1px">${pass?'PASSED':'FAILED'}</div>`
-        :`<i class="ti ti-clock" style="font-size:34px;color:#7ab5ef"></i>`}
+        :`<i class="ti ti-clock" style="font-size:34px;color:#4a9eff"></i>`}
     </div>
     <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">${sub.auto_score!=null?(pass?'Great job!':'Keep studying'):'Submitted!'}</h2>
     <p class="text-sm">${sub.auto_score!=null?`You scored ${sub.auto_score}% — pass mark is ${pm}%`:'Your answers have been submitted.'}</p>
@@ -876,11 +1111,10 @@ function showResult(sub,exam){
         const opts=q.type==='mcq'?q.options:['True','False'];
         const correct=String(ans)===String(q.correct);
         feedback=`<div class="option-row ${correct?'correct':'wrong'} mt-8"><i class="ti ti-${correct?'check':'x'}"></i> ${ans!=null?opts[ans]:'No answer'}</div>`;
-        if(!correct)feedback+=`<div class="text-xs mt-8"><i class="ti ti-check" style="color:#8fcc40"></i> Correct answer: ${opts[q.correct]}</div>`;
+        if(!correct)feedback+=`<div class="text-xs mt-8"><i class="ti ti-check" style="color:#4ade80"></i> Correct: ${opts[q.correct]}</div>`;
       }else{
-        feedback=`<div style="background:var(--surface2);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:8px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer provided</em>'}</div>`;
+        feedback=`<div style="background:rgba(10,18,35,0.8);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:8px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer</em>'}</div>`;
         if(q.type==='short'&&q.modelAnswer)feedback+=`<div class="text-xs mt-8"><strong>Model answer:</strong> ${q.modelAnswer}</div>`;
-        if(q.type==='essay')feedback+=`<div class="text-xs mt-4" style="color:var(--text3)">Your instructor will review this response.</div>`;
       }
       html+=`<div class="question-block mb-12"><div class="q-num">Q${i+1} <span class="badge badge-gray">${qTypeLabel(q.type)}</span></div><div class="q-text">${q.text}</div>${feedback}</div>`;
     });
@@ -890,7 +1124,7 @@ function showResult(sub,exam){
 
 async function viewMyResult(sid){
   const{data:s}=await sb.from('submissions').select('*,exams(*)').eq('id',sid).single();
-  if(!s||!s.exams){alert('Exam data is no longer available.');return;}
+  if(!s||!s.exams){alert('Exam data no longer available.');return;}
   showResult(s,s.exams);
 }
 function goBackToDashboard(){
