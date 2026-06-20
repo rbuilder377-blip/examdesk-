@@ -603,12 +603,27 @@ function setBtn(id,loading,label){
 
 async function loadProfile(){
   try{
-    const{data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
     hide('screen-loading');
-    if(error||!data){ show('screen-auth'); return; }
-    profile=data;
+    // Use array select (not .single()) to avoid 406 when row not found
+    const{data,error}=await sb.from('profiles').select('id,name,role').eq('id',session.user.id);
+    if(error){
+      console.error('Profile error:',error.message,'code:',error.code);
+      // Fallback: read from user_metadata if profile table fails
+      const meta=session.user.user_metadata||{};
+      if(meta.name&&meta.role){
+        profile={id:session.user.id,name:meta.name,role:meta.role};
+        renderScreen(); return;
+      }
+      show('screen-auth'); return;
+    }
+    if(!data||data.length===0){
+      console.error('No profile found for',session.user.id);
+      show('screen-auth'); return;
+    }
+    profile=data[0];
     renderScreen();
   }catch(e){
+    console.error('loadProfile exception:',e);
     hide('screen-loading');
     show('screen-auth');
   }
@@ -693,7 +708,10 @@ async function doRegister(){
 
   setBtn('reg-btn',true,'');
   try{
-    const{data,error}=await sb.auth.signUp({email,password:pass});
+    const{data,error}=await sb.auth.signUp({
+      email,password:pass,
+      options:{data:{name,role}} // store in user_metadata as fallback
+    });
     if(error){
       let msg=error.message;
       if(msg.includes('already registered')||msg.includes('already been registered')||msg.includes('User already registered')){
@@ -806,10 +824,11 @@ async function deleteExam(id){
 
 async function renderStudents(){
   el('admin-students').innerHTML=loadingDiv();
-  const[{data:students},{data:subs}]=await Promise.all([
-    sb.from('profiles').select('*').eq('role','student').order('created_at',{ascending:false}),
-    sb.from('submissions').select('student_id,auto_score')
-  ]);
+  // Use RPC function to bypass RLS for admin reads
+  const{data:students,error:se}=await sb.rpc('admin_get_students');
+  const{data:subs,error:sube}=await sb.rpc('admin_get_submissions_summary');
+  if(se) console.error('students error:',se.message);
+  if(sube) console.error('subs error:',sube.message);
   el('admin-students').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">Students (${students?students.length:0})</h2>`+
     (students&&students.length
       ?`<table class="results-table"><thead><tr><th>Name</th><th>Exams taken</th><th>Avg score</th><th>Joined</th></tr></thead><tbody>`+
@@ -823,16 +842,17 @@ async function renderStudents(){
 
 async function renderAllResults(){
   el('admin-results').innerHTML=loadingDiv();
-  const{data:subs}=await sb.from('submissions').select('*,profiles(name),exams(title,passmark)').order('submitted_at',{ascending:false}).limit(500);
+  const{data:subs,error}=await sb.rpc('admin_get_all_results');
+  if(error) console.error('results error:',error.message);
   el('admin-results').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">All submissions (${subs?subs.length:0})</h2>`+
     (subs&&subs.length?subs.map(s=>{
-      const pm=s.exams?s.exams.passmark||50:50;
+      const pm=s.passmark||50;
       const pass=s.auto_score!=null&&s.auto_score>=pm;
       const badge=s.auto_score!=null?(pass?'badge-green':'badge-red'):'badge-amber';
       return`<div class="submission-row">
         <div>
-          <div style="font-size:14px;font-weight:600">${s.profiles?s.profiles.name:'Unknown'}</div>
-          <div class="text-xs mt-4">${s.exams?s.exams.title:'Deleted exam'} &middot; ${new Date(s.submitted_at).toLocaleString()}</div>
+          <div style="font-size:14px;font-weight:600">${s.student_name||'Unknown'}</div>
+          <div class="text-xs mt-4">${s.exam_title||'Deleted exam'} &middot; ${new Date(s.submitted_at).toLocaleString()}</div>
         </div>
         <div class="flex gap-8 align-center">
           <span class="badge ${badge}">${s.auto_score!=null?s.auto_score+'%':'Pending'}</span>
