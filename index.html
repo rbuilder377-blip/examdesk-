@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +20,49 @@
   --radius:8px;--radius-lg:12px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+
+
+/* ── ARABIC / RTL SUPPORT ── */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap');
+.lang-ar { font-family: 'Cairo', sans-serif; direction: rtl; text-align: right; }
+.lang-ar input, .lang-ar textarea, .lang-ar select { direction: rtl; text-align: right; font-family: 'Cairo', sans-serif; }
+.lang-ar .flex { flex-direction: row-reverse; }
+.lang-ar .tab-bar { flex-direction: row-reverse; }
+.lang-ar .nav { flex-direction: row-reverse; }
+.lang-ar .nav-right { flex-direction: row-reverse; }
+.lang-ar .exam-card { flex-direction: row-reverse; }
+.lang-ar .submission-row { flex-direction: row-reverse; }
+.lang-ar .question-block { text-align: right; }
+.lang-ar .option-row { flex-direction: row-reverse; }
+.lang-ar .q-num { flex-direction: row-reverse; }
+.lang-ar .grid-2 { direction: rtl; }
+.lang-ar .grid-3 { direction: rtl; }
+.lang-ar .results-table th, .lang-ar .results-table td { text-align: right; }
+.lang-ar .modal { direction: rtl; text-align: right; }
+.lang-ar .modal .flex { flex-direction: row-reverse; }
+.lang-ar .justify-end { justify-content: flex-start; }
+.lang-ar .justify-between { flex-direction: row-reverse; }
+
+/* Language toggle button */
+.lang-toggle {
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  padding: 5px 12px; border: 1px solid var(--border2); border-radius: var(--radius);
+  background: rgba(74,158,255,0.1); color: var(--blue); cursor: pointer;
+  letter-spacing: 1px; transition: all .15s;
+}
+.lang-toggle:hover { background: rgba(74,158,255,0.2); }
+
+/* ── IMAGE IN QUESTIONS ── */
+.q-image { width:100%; max-height:320px; object-fit:contain; border-radius:var(--radius); margin-bottom:14px; border:1px solid var(--border); background:var(--surface2); display:block; }
+.img-upload-area {
+  border: 2px dashed var(--border2); border-radius: var(--radius); padding: 16px;
+  text-align: center; cursor: pointer; transition: border-color .15s, background .15s;
+  color: var(--text2); font-size: 13px; margin-top: 8px; position: relative;
+}
+.img-upload-area:hover { border-color: var(--blue); background: rgba(74,158,255,.05); color: var(--blue); }
+.img-upload-area input[type=file] { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%; }
+.img-preview { width:100%;max-height:180px;object-fit:contain;border-radius:var(--radius);margin-top:8px;border:1px solid var(--border); }
+.img-remove { margin-top:6px; }
 
 /* ── SCIENCE CANVAS BACKGROUND ── */
 #science-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.75}
@@ -240,6 +283,7 @@ h2.section-title,h2[style*="font-weight:600"]{
     <div class="nav-brand"><div class="brand-icon"><i class="ti ti-dna"></i></div> MR:BIO <span class="badge badge-blue">Admin</span></div>
     <div class="nav-right">
       <span class="text-sm" id="admin-name-display"></span>
+      <button class="lang-toggle" onclick="toggleLang()" id="lang-btn">عربي</button>
       <button class="btn btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i> Sign out</button>
     </div>
   </nav>
@@ -263,6 +307,7 @@ h2.section-title,h2[style*="font-weight:600"]{
     <div class="nav-brand"><div class="brand-icon"><i class="ti ti-dna"></i></div> MR:BIO</div>
     <div class="nav-right">
       <span class="text-sm" id="student-name-display"></span>
+      <button class="lang-toggle" onclick="toggleLang()" id="lang-btn2">عربي</button>
       <button class="btn btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i> Sign out</button>
     </div>
   </nav>
@@ -990,7 +1035,7 @@ async function viewSubmission(sid){
   if(exam&&exam.questions){
     exam.questions.forEach((q,i)=>{
       const ans=s.answers[q.id];
-      html+=`<div class="question-block mb-12"><div class="q-num">Q${i+1} <span class="badge badge-gray">${qTypeLabel(q.type)}</span></div><div class="q-text">${q.text}</div>`;
+      html+='<div class="question-block mb-12"><div class="q-num">Q'+(i+1)+' <span class="badge badge-gray">'+(qTypeLabel(q.type))+'</span></div>'+(q.image?'<img src="'+q.image+'" class="q-image" alt="">':'')+ '<div class="q-text" style="direction:auto">'+(q.text)+'</div>';
       if(q.type==='mcq'){
         q.options.forEach((o,oi)=>{
           const isAns=String(ans)===String(oi),isCorrect=String(q.correct)===String(oi);
@@ -1065,7 +1110,13 @@ function renderQEditor(){
         <div class="flex gap-8 align-center"><span class="badge badge-blue">Q${i+1}</span><span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div>
         <button class="btn btn-sm btn-danger" onclick="removeQuestion('${q.id}')"><i class="ti ti-trash"></i></button>
       </div>
-      <textarea rows="2" placeholder="Enter your question text here..." oninput="setQText('${q.id}',this.value)" style="width:100%;margin-bottom:10px;resize:vertical">${q.text}</textarea>
+      <textarea rows="2" placeholder="Enter your question text here... / اكتب نص السؤال هنا..." oninput="setQText('${q.id}',this.value)" style="width:100%;margin-bottom:10px;resize:vertical;direction:auto">${q.text}</textarea>
+      <div class="img-upload-area" onclick="document.getElementById('img-input-${q.id}').click()">
+        <input type="file" id="img-input-${q.id}" accept="image/*" onchange="handleImgUpload('${q.id}',this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+        <i class="ti ti-photo-plus" style="font-size:20px;margin-bottom:4px;display:block"></i>
+        <span>Click or paste an image (optional) / انقر أو الصق صورة</span>
+        "+(q.image?'<img src="'+q.image+'" class="img-preview"><button class="btn btn-sm btn-danger img-remove" onclick="event.stopPropagation();removeQImage(\''+q.id+'\')" ><i class="ti ti-x"></i> Remove</button>':'')+"
+      </div>
       ${inner}
     </div>`;
   }).join('');
@@ -1174,17 +1225,22 @@ async function startExam(examId){
 }
 
 function renderExamQuestions(){
-  el('q-progress-text').textContent=`${currentExam.questions.length} questions total`;
+  const isAr=document.getElementById('html-root').classList.contains('lang-ar');
+  el('q-progress-text').textContent=isAr?`إجمالي الأسئلة: ${currentExam.questions.length}`:`${currentExam.questions.length} questions total`;
   updateProgress();
   el('exam-questions').innerHTML=currentExam.questions.map((q,i)=>{
     let opts='';
-    if(q.type==='mcq'){opts=q.options.map((o,oi)=>`<div class="option-row" id="opt_${q.id}_${oi}" onclick="selectOpt('${q.id}',${oi})">${o}</div>`).join('');}
-    else if(q.type==='truefalse'){opts=`<div class="option-row" id="opt_${q.id}_0" onclick="selectOpt('${q.id}',0)">True</div><div class="option-row" id="opt_${q.id}_1" onclick="selectOpt('${q.id}',1)">False</div>`;}
-    else if(q.type==='short'){opts=`<input type="text" placeholder="Type your answer..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="margin-top:4px">`;}
-    else{opts=`<textarea rows="6" placeholder="Write your answer here..." oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="width:100%;margin-top:8px;resize:vertical"></textarea>`;}
+    const trueLabel=isAr?'صح':'True';
+    const falseLabel=isAr?'خطأ':'False';
+    if(q.type==='mcq'){opts=q.options.map((o,oi)=>`<div class="option-row" id="opt_${q.id}_${oi}" onclick="selectOpt('${q.id}',${oi})" style="direction:auto">${o}</div>`).join('');}
+    else if(q.type==='truefalse'){opts=`<div class="option-row" id="opt_${q.id}_0" onclick="selectOpt('${q.id}',0)">${trueLabel}</div><div class="option-row" id="opt_${q.id}_1" onclick="selectOpt('${q.id}',1)">${falseLabel}</div>`;}
+    else if(q.type==='short'){opts=`<input type="text" placeholder="${isAr?'اكتب إجابتك...':'Type your answer...'}" oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="margin-top:4px;direction:auto">`;}
+    else{opts=`<textarea rows="6" placeholder="${isAr?'اكتب إجابتك هنا...':'Write your answer here...'}" oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="width:100%;margin-top:8px;resize:vertical;direction:auto"></textarea>`;}
+    const qLabel=isAr?`السؤال ${i+1} من ${currentExam.questions.length}`:`Question ${i+1} of ${currentExam.questions.length}`;
     return`<div class="question-block">
-      <div class="q-num">Question ${i+1} of ${currentExam.questions.length} <span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div>
-      <div class="q-text">${q.text}</div>
+      <div class="q-num">${qLabel} <span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div>
+      ${q.image?`<img src="${q.image}" class="q-image" alt="question image">`:''}
+      <div class="q-text" style="direction:auto">${q.text}</div>
       ${opts}
     </div>`;
   }).join('');
@@ -1272,7 +1328,7 @@ function showResult(sub,exam){
         feedback=`<div style="background:rgba(10,18,35,0.8);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:8px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer</em>'}</div>`;
         if(q.type==='short'&&q.modelAnswer)feedback+=`<div class="text-xs mt-8"><strong>Model answer:</strong> ${q.modelAnswer}</div>`;
       }
-      html+=`<div class="question-block mb-12"><div class="q-num">Q${i+1} <span class="badge badge-gray">${qTypeLabel(q.type)}</span></div><div class="q-text">${q.text}</div>${feedback}</div>`;
+      html+='<div class="question-block mb-12"><div class="q-num">Q'+(i+1)+' <span class="badge badge-gray">'+(qTypeLabel(q.type))+'</span></div>'+(q.image?'<img src="'+q.image+'" class="q-image" alt="">':'')+ '<div class="q-text" style="direction:auto">'+(q.text)+'</div>'+(feedback)+'</div>';
     });
   }
   el('result-content').innerHTML=html;
@@ -1288,6 +1344,80 @@ function goBackToDashboard(){
   if(profile.role==='admin'){show('screen-admin');adminTab('results');}
   else{show('screen-student');studentTab('myresults');}
 }
+
+// ── LANGUAGE TOGGLE ─────────────────────────────────────
+let currentLang='en';
+const AR={
+  signin:'تسجيل الدخول', createaccount:'إنشاء حساب',
+  email:'البريد الإلكتروني', password:'كلمة المرور',
+  fullname:'الاسم الكامل', accounttype:'نوع الحساب',
+  student:'طالب', admin:'مدير', admincode:'رمز المدير',
+  dashboard:'لوحة التحكم', exams:'الاختبارات',
+  students:'الطلاب', results:'النتائج',
+  availableexams:'الاختبارات المتاحة', myresults:'نتائجي',
+  signout:'تسجيل الخروج', newexam:'اختبار جديد',
+  submit:'تسليم الاختبار', back:'رجوع',
+  passed:'ناجح', failed:'راسب',
+  totalexams:'إجمالي الاختبارات', totalstudents:'إجمالي الطلاب',
+  submissions:'التسليمات'
+};
+
+function toggleLang(){
+  currentLang=currentLang==='en'?'ar':'en';
+  const root=document.getElementById('html-root');
+  if(currentLang==='ar'){
+    root.classList.add('lang-ar');
+    root.setAttribute('dir','rtl');
+    root.setAttribute('lang','ar');
+    document.querySelectorAll('#lang-btn,#lang-btn2').forEach(b=>{if(b)b.textContent='English';});
+  } else {
+    root.classList.remove('lang-ar');
+    root.setAttribute('dir','ltr');
+    root.setAttribute('lang','en');
+    document.querySelectorAll('#lang-btn,#lang-btn2').forEach(b=>{if(b)b.textContent='عربي';});
+  }
+}
+
+// ── IMAGE UPLOAD & PASTE ─────────────────────────────────
+function handleImgUpload(qId, input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){alert('Image too large. Max 5MB.');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const q=draftQuestions.find(q=>q.id===qId);
+    if(q){q.image=e.target.result;renderQEditor();}
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeQImage(qId){
+  const q=draftQuestions.find(q=>q.id===qId);
+  if(q){delete q.image;renderQEditor();}
+}
+
+// Global paste handler — paste image anywhere in the exam editor
+document.addEventListener('paste',function(e){
+  // Only when create exam modal is open
+  if(el('modal-create-exam').classList.contains('hidden'))return;
+  const items=e.clipboardData&&e.clipboardData.items;
+  if(!items)return;
+  for(let i=0;i<items.length;i++){
+    if(items[i].type.indexOf('image')!==-1){
+      const file=items[i].getAsFile();
+      if(!file)continue;
+      // Attach to the last question
+      if(!draftQuestions.length){alert('Add a question first before pasting an image.');return;}
+      const q=draftQuestions[draftQuestions.length-1];
+      const reader=new FileReader();
+      reader.onload=ev=>{q.image=ev.target.result;renderQEditor();};
+      reader.readAsDataURL(file);
+      e.preventDefault();
+      break;
+    }
+  }
+});
+
 </script>
 </body>
 </html>
