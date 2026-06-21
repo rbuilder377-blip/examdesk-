@@ -254,9 +254,16 @@ h2.section-title,h2[style*="font-weight:600"]{
           <button class="btn btn-primary" id="login-btn" style="width:100%;justify-content:center" onclick="doLogin()"><i class="ti ti-login"></i> Sign in</button>
         </div>
         <div id="auth-register" class="hidden">
-          <div class="mb-12"><div class="label">Full name</div><input type="text" id="reg-name" placeholder="Your full name"></div>
+          <div class="grid-2 mb-12">
+            <div><div class="label">Full name</div><input type="text" id="reg-name" placeholder="Your full name"></div>
+            <div><div class="label">Username</div><input type="text" id="reg-username" placeholder="e.g. ahmed_bio" style="direction:ltr"></div>
+          </div>
           <div class="mb-12"><div class="label">Email</div><input type="email" id="reg-email" placeholder="your@email.com"></div>
           <div class="mb-12"><div class="label">Password</div><input type="password" id="reg-pass" placeholder="Min 6 characters"></div>
+          <div class="grid-2 mb-12">
+            <div><div class="label">Phone number</div><input type="tel" id="reg-phone" placeholder="+20 1234567890"></div>
+            <div><div class="label">Academic year / Age</div><input type="text" id="reg-year" placeholder="e.g. Grade 10 / Age 16"></div>
+          </div>
           <div class="mb-12">
             <div class="label">Account type</div>
             <select id="reg-role" onchange="toggleAdminCode()">
@@ -330,18 +337,22 @@ h2.section-title,h2[style*="font-weight:600"]{
       <button class="btn btn-sm btn-danger" onclick="confirmSubmit()"><i class="ti ti-check"></i> Submit</button>
     </div>
   </nav>
-  <div class="page">
-    <div id="exam-header" class="mb-24"></div>
-    <div class="mb-24">
+  <div class="page" style="max-width:680px">
+    <div id="exam-header" class="mb-16"></div>
+    <div class="mb-20">
       <div class="flex justify-between mb-8">
         <span class="text-xs" id="q-progress-text"></span>
         <span class="text-xs" id="q-answered-text"></span>
       </div>
       <div class="progress-bar"><div class="progress-fill" id="q-progress-fill" style="width:0%"></div></div>
     </div>
-    <div id="exam-questions"></div>
-    <div style="text-align:center;padding:2rem 0">
-      <button class="btn btn-success" onclick="confirmSubmit()"><i class="ti ti-check"></i> Submit exam</button>
+    <!-- Single question display -->
+    <div id="exam-question-single"></div>
+    <!-- Navigation -->
+    <div class="flex justify-between align-center mt-20" style="padding-bottom:3rem">
+      <button class="btn" id="btn-prev-q" onclick="examNavPrev()" style="visibility:hidden"><i class="ti ti-arrow-left"></i> Previous</button>
+      <span class="text-xs" id="q-nav-indicator" style="color:var(--text2)"></span>
+      <button class="btn btn-primary" id="btn-next-q" onclick="examNavNext()">Next <i class="ti ti-arrow-right"></i></button>
     </div>
   </div>
 </div>
@@ -857,14 +868,18 @@ async function doLogin(){
 }
 
 async function doRegister(){
-  const name  = el('reg-name').value.trim();
-  const email = el('reg-email').value.trim().toLowerCase();
-  const pass  = el('reg-pass').value;
-  const role  = el('reg-role').value;
-  const code  = el('reg-admin-code').value.trim();
+  const name     = el('reg-name').value.trim();
+  const username = (el('reg-username').value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+  const email    = el('reg-email').value.trim().toLowerCase();
+  const pass     = el('reg-pass').value;
+  const phone    = (el('reg-phone').value||'').trim();
+  const acyear   = (el('reg-year').value||'').trim();
+  const role     = el('reg-role').value;
+  const code     = el('reg-admin-code').value.trim();
   hide('reg-error'); hide('reg-success');
 
   if(!name||!email||!pass){ showRegErr('Please fill in all fields.'); return; }
+  if(!username){ showRegErr('Please enter a username (letters, numbers, underscore only).'); return; }
   if(pass.length<6){ showRegErr('Password must be at least 6 characters.'); return; }
   if(role==='admin'&&code!==ADMIN_CODE){ showRegErr('Incorrect admin code.'); return; }
 
@@ -872,7 +887,7 @@ async function doRegister(){
   try{
     const{data,error}=await sb.auth.signUp({
       email,password:pass,
-      options:{data:{name,role}} // store in user_metadata as fallback
+      options:{data:{name,role,username,phone,acyear}}
     });
     if(error){
       let msg=error.message;
@@ -888,7 +903,7 @@ async function doRegister(){
       setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
       return;
     }
-    const{error:pe}=await sb.from('profiles').insert({id:data.user.id,name,role});
+    const{error:pe}=await sb.from('profiles').insert({id:data.user.id,name,username,phone,acyear,role});
     if(pe){
       showRegErr('Account created but profile setup failed: '+pe.message);
       setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
@@ -897,7 +912,7 @@ async function doRegister(){
     setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
     if(data.session){
       session=data.session;
-      profile={id:data.user.id,name,role};
+      profile={id:data.user.id,name,username,phone,acyear,role};
       renderScreen();
     } else {
       el('reg-success').textContent='Account created! Check your email and click the confirmation link, then sign in.';
@@ -993,11 +1008,11 @@ async function renderStudents(){
   if(sube) console.error('subs error:',sube.message);
   el('admin-students').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">Students (${students?students.length:0})</h2>`+
     (students&&students.length
-      ?`<table class="results-table"><thead><tr><th>Name</th><th>Exams taken</th><th>Avg score</th><th>Joined</th></tr></thead><tbody>`+
+      ?`<table class="results-table"><thead><tr><th>Name</th><th>Phone</th><th>Year/Age</th><th>Exams</th><th>Avg</th><th>Joined</th></tr></thead><tbody>`+
         students.map(s=>{
           const ms=(subs||[]).filter(x=>x.student_id===s.id&&x.auto_score!=null);
           const avg=ms.length?Math.round(ms.reduce((a,b)=>a+(b.auto_score||0),0)/ms.length)+'%':'—';
-          return`<tr><td><strong>${s.name}</strong></td><td>${(subs||[]).filter(x=>x.student_id===s.id).length}</td><td>${avg}</td><td>${new Date(s.created_at).toLocaleDateString()}</td></tr>`;
+          return`<tr><td><strong>${s.name}</strong><div class='text-xs' style='color:var(--text3)'>${s.username||''}</div></td><td>${s.phone||'—'}</td><td>${s.acyear||'—'}</td><td>${(subs||[]).filter(x=>x.student_id===s.id).length}</td><td>${avg}</td><td>${new Date(s.created_at).toLocaleDateString()}</td></tr>`;
         }).join('')+'</tbody></table>'
       :'<div class="empty-state"><i class="ti ti-users-off"></i><p>No students yet.</p></div>');
 }
@@ -1112,15 +1127,40 @@ function renderQEditor(){
         <button class="btn btn-sm btn-danger" onclick="removeQuestion('${q.id}')"><i class="ti ti-trash"></i></button>
       </div>
       <textarea rows="2" placeholder="Enter your question text here... / اكتب نص السؤال هنا..." oninput="setQText('${q.id}',this.value)" style="width:100%;margin-bottom:10px;resize:vertical;direction:auto">${q.text}</textarea>
-      <div class="img-upload-area" onclick="document.getElementById('img-input-${q.id}').click()">
-        <input type="file" id="img-input-${q.id}" accept="image/*" onchange="handleImgUpload('${q.id}',this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+      <div class="img-upload-area" id="upload-area-${q.id}" onclick="triggerImgInput('${q.id}')">
+        <input type="file" id="img-input-${q.id}" accept="image/*" onchange="handleImgUpload('${q.id}',this)" style="display:none">
         <i class="ti ti-photo-plus" style="font-size:20px;margin-bottom:4px;display:block"></i>
-        <span>Click or paste an image (optional) / انقر أو الصق صورة</span>
-        "+(q.image?'<img src="'+q.image+'" class="img-preview"><button class="btn btn-sm btn-danger img-remove" onclick="removeQImage(\''+q.id+'\')" >Remove</button>':'')+"
+        <span id="upload-label-${q.id}">Click or paste an image (optional) / انقر أو الصق صورة</span>
+        <div id="img-preview-wrap-${q.id}"></div>
       </div>
       ${inner}
     </div>`;
   }).join('');
+  // After DOM is built, inject images safely
+  draftQuestions.forEach(q=>{
+    if(q.image){
+      const wrap=document.getElementById('img-preview-wrap-'+q.id);
+      const label=document.getElementById('upload-label-'+q.id);
+      if(wrap){
+        const img=document.createElement('img');
+        img.src=q.image;
+        img.className='img-preview';
+        const btn=document.createElement('button');
+        btn.className='btn btn-sm btn-danger img-remove';
+        btn.textContent='Remove / حذف';
+        btn.onclick=function(e){e.stopPropagation();removeQImage(q.id);};
+        wrap.innerHTML='';
+        wrap.appendChild(img);
+        wrap.appendChild(btn);
+        if(label) label.style.display='none';
+      }
+    }
+  });
+}
+
+function triggerImgInput(qId){
+  const inp=document.getElementById('img-input-'+qId);
+  if(inp) inp.click();
 }
 
 function setQText(id,v){draftQuestions.find(q=>q.id===id).text=v;}
