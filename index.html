@@ -1049,24 +1049,89 @@ async function renderStudents(){
 
 async function renderAllResults(){
   el('admin-results').innerHTML=loadingDiv();
-  const{data:subs,error}=await sb.rpc('admin_get_all_results');
+  const[{data:subs,error},{data:students}]=await Promise.all([
+    sb.rpc('admin_get_all_results'),
+    sb.rpc('admin_get_students')
+  ]);
   if(error) console.error('results error:',error.message);
-  el('admin-results').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">All submissions (${subs?subs.length:0})</h2>`+
-    (subs&&subs.length?subs.map(s=>{
-      const pm=s.passmark||50;
-      const pass=s.auto_score!=null&&s.auto_score>=pm;
-      const badge=s.auto_score!=null?(pass?'badge-green':'badge-red'):'badge-amber';
-      return`<div class="submission-row">
-        <div>
-          <div style="font-size:14px;font-weight:600">${s.student_name||'Unknown'}</div>
-          <div class="text-xs mt-4">${s.exam_title||'Deleted exam'} &middot; ${new Date(s.submitted_at).toLocaleString()}</div>
-        </div>
-        <div class="flex gap-8 align-center">
-          <span class="badge ${badge}">${s.auto_score!=null?s.auto_score+'%':'Pending'}</span>
-          <button class="btn btn-sm" onclick="viewSubmission('${s.id}')"><i class="ti ti-eye"></i> Review</button>
-        </div>
-      </div>`;
-    }).join(''):'<div class="empty-state"><i class="ti ti-chart-off"></i><p>No submissions yet.</p></div>');
+  if(!subs||!subs.length){
+    el('admin-results').innerHTML='<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">Results</h2><div class="empty-state"><i class="ti ti-chart-off"></i><p>No submissions yet.</p></div>';
+    return;
+  }
+
+  // Group submissions by student
+  const byStudent={};
+  subs.forEach(s=>{
+    const key=s.student_id||'unknown';
+    if(!byStudent[key]) byStudent[key]={name:s.student_name||'Unknown',subs:[]};
+    byStudent[key].subs.push(s);
+  });
+
+  // Build student info map for extra fields
+  const studentInfo={};
+  (students||[]).forEach(s=>{ studentInfo[s.id]={phone:s.phone,acyear:s.acyear,username:s.username}; });
+
+  let html='<div class="flex justify-between align-center mb-16">'+
+    '<h2 style="font-size:16px;font-weight:600">Results — '+Object.keys(byStudent).length+' students, '+subs.length+' submissions</h2>'+
+    '</div>';
+
+  Object.entries(byStudent).forEach(([sid,student])=>{
+    const info=studentInfo[sid]||{};
+    const scores=student.subs.filter(s=>s.auto_score!=null).map(s=>s.auto_score);
+    const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):null;
+    const avgBadge=avg!=null?(avg>=50?'badge-green':'badge-red'):'badge-gray';
+
+    html+='<div class="card mb-16">'+
+      // Student header
+      '<div class="flex justify-between align-center mb-12">'+
+        '<div class="flex gap-12 align-center">'+
+          '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--blue-dark),#0d7a4a);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0">'+
+            student.name.charAt(0).toUpperCase()+
+          '</div>'+
+          '<div>'+
+            '<div style="font-size:15px;font-weight:700">'+student.name+
+              (info.username?'<span class="text-xs" style="color:var(--text3);margin-left:8px">@'+info.username+'</span>':'')+
+            '</div>'+
+            '<div class="text-xs mt-4">'+
+              (info.phone?'<i class="ti ti-phone" style="font-size:11px"></i> '+info.phone+' &nbsp;':'')+
+              (info.acyear?'<i class="ti ti-school" style="font-size:11px"></i> '+info.acyear:'')+'&nbsp;'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="flex gap-8 align-center">'+
+          '<span class="text-xs">Avg:</span>'+
+          '<span class="badge '+avgBadge+'" style="font-size:13px">'+
+            (avg!=null?avg+'%':'—')+
+          '</span>'+
+          '<span class="badge badge-gray">'+student.subs.length+' exam'+(student.subs.length!==1?'s':'')+' taken</span>'+
+        '</div>'+
+      '</div>'+
+      // Submissions table
+      '<table class="results-table">'+
+        '<thead><tr>'+
+          '<th>#</th><th>Exam</th><th>Score</th><th>Status</th><th>Date</th><th>Action</th>'+
+        '</tr></thead>'+
+        '<tbody>'+
+        student.subs.map((s,i)=>{
+          const pm=s.passmark||50;
+          const pass=s.auto_score!=null&&s.auto_score>=pm;
+          const badge=s.auto_score!=null?(pass?'badge-green':'badge-red'):'badge-amber';
+          const status=s.auto_score!=null?(pass?'<span style="color:#4ade80">&#10003; Passed</span>':'<span style="color:#f87171">&#10007; Failed</span>'):'<span style="color:#fbbf24">Pending</span>';
+          return '<tr>'+
+            '<td style="color:var(--text3)">'+(i+1)+'</td>'+
+            '<td><strong>'+(s.exam_title||'Deleted exam')+'</strong></td>'+
+            '<td><span class="badge '+badge+'">'+(s.auto_score!=null?s.auto_score+'%':'—')+'</span></td>'+
+            '<td>'+status+'</td>'+
+            '<td class="text-xs">'+new Date(s.submitted_at).toLocaleString()+'</td>'+
+            '<td><button class="btn btn-sm" onclick="viewSubmission(\''+s.id+'\')" ><i class="ti ti-eye"></i> Review</button></td>'+
+          '</tr>';
+        }).join('')+
+        '</tbody>'+
+      '</table>'+
+    '</div>';
+  });
+
+  el('admin-results').innerHTML=html;
 }
 
 async function viewSubmission(sid){
