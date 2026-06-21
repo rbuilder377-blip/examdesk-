@@ -973,23 +973,85 @@ function adminTab(t){
 
 async function renderAdminDashboard(){
   el('admin-dashboard').innerHTML=loadingDiv();
-  const[{count:ec},{count:sc},{count:subc}]=await Promise.all([
+  const[{count:ec},{count:sc},{count:subc},
+        {data:recentStudents},{data:recentSubs},{data:recentExams}]=await Promise.all([
     sb.from('exams').select('*',{count:'exact',head:true}),
     sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','student'),
-    sb.from('submissions').select('*',{count:'exact',head:true})
+    sb.from('submissions').select('*',{count:'exact',head:true}),
+    sb.rpc('admin_get_students'),
+    sb.rpc('admin_get_all_results'),
+    sb.from('exams').select('*').order('created_at',{ascending:false}).limit(5)
   ]);
-  const{data:recent}=await sb.from('exams').select('*').order('created_at',{ascending:false}).limit(5);
-  el('admin-dashboard').innerHTML=`
-    <div class="grid-3 mb-24">
+
+  // Build recent students (last 6)
+  const latestStudents=(recentStudents||[]).slice(0,6);
+
+  // Build recent scores (last 8 submissions)
+  const latestSubs=(recentSubs||[]).slice(0,8);
+
+  // Stat cards
+  const activeExams=(recentExams||[]).filter(e=>e.status==='active').length;
+  const passedCount=(recentSubs||[]).filter(s=>s.auto_score!=null&&s.auto_score>=(s.passmark||50)).length;
+  const passRate=(recentSubs||[]).filter(s=>s.auto_score!=null).length>0
+    ?Math.round(passedCount/(recentSubs||[]).filter(s=>s.auto_score!=null).length*100)
+    :0;
+
+  let html=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px">
       <div class="stat-card"><div class="stat-num">${ec||0}</div><div class="stat-label">Total exams</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#4a9eff">${activeExams}</div><div class="stat-label">Active exams</div></div>
       <div class="stat-card"><div class="stat-num">${sc||0}</div><div class="stat-label">Students</div></div>
-      <div class="stat-card"><div class="stat-num">${subc||0}</div><div class="stat-label">Submissions</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:${passRate>=50?'#4ade80':'#f87171'}">${passRate}%</div><div class="stat-label">Pass rate</div></div>
     </div>
-    <div class="flex justify-between align-center mb-14">
-      <h2 style="font-size:16px;font-weight:600">Recent exams</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+
+      <!-- Recent registered students -->
+      <div class="card">
+        <div class="flex justify-between align-center mb-12">
+          <h3 style="font-size:14px;font-weight:600"><i class="ti ti-user-plus" style="color:#4a9eff"></i> Recent registrations</h3>
+          <button class="btn btn-sm" onclick="adminTab('students')">View all</button>
+        </div>
+        ${latestStudents.length?`<table class="results-table">
+          <thead><tr><th>Name</th><th>Year/Age</th><th>Joined</th></tr></thead>
+          <tbody>`+latestStudents.map(s=>`
+            <tr>
+              <td><strong>${s.name}</strong>${s.username?`<div class="text-xs" style="color:var(--text3)">@${s.username}</div>`:''}</td>
+              <td class="text-xs">${s.acyear||'<span style="color:var(--text3)">—</span>'}</td>
+              <td class="text-xs">${new Date(s.created_at).toLocaleDateString()}</td>
+            </tr>`).join('')+`</tbody></table>`
+          :'<div class="empty-state" style="padding:1.5rem"><i class="ti ti-users" style="font-size:24px"></i><p style="font-size:13px">No students yet</p></div>'}
+      </div>
+
+      <!-- Recent exam scores -->
+      <div class="card">
+        <div class="flex justify-between align-center mb-12">
+          <h3 style="font-size:14px;font-weight:600"><i class="ti ti-trophy" style="color:#fbbf24"></i> Recent scores</h3>
+          <button class="btn btn-sm" onclick="adminTab('results')">View all</button>
+        </div>
+        ${latestSubs.length?`<table class="results-table">
+          <thead><tr><th>Student</th><th>Exam</th><th>Score</th></tr></thead>
+          <tbody>`+latestSubs.map(s=>{
+            const pm=s.passmark||50;
+            const pass=s.auto_score!=null&&s.auto_score>=pm;
+            const badge=s.auto_score!=null?(pass?'badge-green':'badge-red'):'badge-amber';
+            return`<tr>
+              <td><strong>${s.student_name||'?'}</strong></td>
+              <td class="text-xs" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.exam_title||'—'}</td>
+              <td><span class="badge ${badge}">${s.auto_score!=null?s.auto_score+'%':'Pending'}</span></td>
+            </tr>`;
+          }).join('')+`</tbody></table>`
+          :'<div class="empty-state" style="padding:1.5rem"><i class="ti ti-chart-bar" style="font-size:24px"></i><p style="font-size:13px">No submissions yet</p></div>'}
+      </div>
+    </div>
+
+    <!-- Recent exams -->
+    <div class="flex justify-between align-center mb-12">
+      <h3 style="font-size:14px;font-weight:600"><i class="ti ti-file-text" style="color:#4ade80"></i> Recent exams</h3>
       <button class="btn btn-sm btn-primary" onclick="openCreateExam()"><i class="ti ti-plus"></i> New exam</button>
     </div>
-    ${recent&&recent.length?recent.map(examCardHTML).join(''):'<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet.</p></div>'}`;
+    ${recentExams&&recentExams.length?recentExams.map(examCardHTML).join(''):'<div class="empty-state"><i class="ti ti-file-off"></i><p>No exams yet.</p></div>'}`;
+
+  el('admin-dashboard').innerHTML=html;
 }
 
 function examCardHTML(e){
@@ -1031,20 +1093,86 @@ async function deleteExam(id){
 
 async function renderStudents(){
   el('admin-students').innerHTML=loadingDiv();
-  // Use RPC function to bypass RLS for admin reads
-  const{data:students,error:se}=await sb.rpc('admin_get_students');
-  const{data:subs,error:sube}=await sb.rpc('admin_get_submissions_summary');
-  if(se) console.error('students error:',se.message);
-  if(sube) console.error('subs error:',sube.message);
-  el('admin-students').innerHTML=`<h2 style="font-size:16px;font-weight:600;margin-bottom:16px">Students (${students?students.length:0})</h2>`+
-    (students&&students.length
-      ?`<table class="results-table"><thead><tr><th>Name</th><th>Phone</th><th>Year/Age</th><th>Exams</th><th>Avg</th><th>Joined</th></tr></thead><tbody>`+
-        students.map(s=>{
-          const ms=(subs||[]).filter(x=>x.student_id===s.id&&x.auto_score!=null);
-          const avg=ms.length?Math.round(ms.reduce((a,b)=>a+(b.auto_score||0),0)/ms.length)+'%':'—';
-          return`<tr><td><strong>${s.name}</strong><div class='text-xs' style='color:var(--text3)'>${s.username||''}</div></td><td>${s.phone||'—'}</td><td>${s.acyear||'—'}</td><td>${(subs||[]).filter(x=>x.student_id===s.id).length}</td><td>${avg}</td><td>${new Date(s.created_at).toLocaleDateString()}</td></tr>`;
-        }).join('')+'</tbody></table>'
-      :'<div class="empty-state"><i class="ti ti-users-off"></i><p>No students yet.</p></div>');
+  const[{data:students,error:se},{data:subs}]=await Promise.all([
+    sb.rpc('admin_get_students'),
+    sb.rpc('admin_get_submissions_summary')
+  ]);
+  if(se){console.error('students error:',se.message);}
+  if(!students||!students.length){
+    el('admin-students').innerHTML='<div class="empty-state"><i class="ti ti-users-off"></i><p>No students yet.</p></div>';
+    return;
+  }
+
+  // Group by academic year
+  const byYear={};
+  students.forEach(s=>{
+    const yr=s.acyear&&s.acyear.trim()?s.acyear.trim():'Unspecified';
+    if(!byYear[yr]) byYear[yr]=[];
+    byYear[yr].push(s);
+  });
+
+  const studentRow=(s)=>{
+    const ms=(subs||[]).filter(x=>x.student_id===s.id&&x.auto_score!=null);
+    const avg=ms.length?Math.round(ms.reduce((a,b)=>a+(b.auto_score||0),0)/ms.length):null;
+    const avgBadge=avg!=null?(avg>=50?'badge-green':'badge-red'):'badge-gray';
+    const examCount=(subs||[]).filter(x=>x.student_id===s.id).length;
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue-dark),#0d7a4a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${s.name.charAt(0).toUpperCase()}</div>
+          <div>
+            <strong>${s.name}</strong>
+            ${s.username?`<div class="text-xs" style="color:var(--text3)">@${s.username}</div>`:''}
+          </div>
+        </div>
+      </td>
+      <td class="text-xs">${s.phone||'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${examCount}</td>
+      <td>${avg!=null?`<span class="badge ${avgBadge}">${avg}%</span>`:'<span style="color:var(--text3)">—</span>'}</td>
+      <td class="text-xs">${new Date(s.created_at).toLocaleDateString()}</td>
+    </tr>`;
+  };
+
+  let html=`<div class="flex justify-between align-center mb-20">
+    <h2 style="font-size:16px;font-weight:600">Students (${students.length})</h2>
+    <span class="badge badge-blue">${Object.keys(byYear).length} academic year${Object.keys(byYear).length!==1?'s':''}</span>
+  </div>`;
+
+  // Sort years — put Unspecified last
+  const sortedYears=Object.keys(byYear).sort((a,b)=>{
+    if(a==='Unspecified') return 1;
+    if(b==='Unspecified') return -1;
+    return a.localeCompare(b);
+  });
+
+  sortedYears.forEach(yr=>{
+    const group=byYear[yr];
+    const groupSubs=(subs||[]).filter(x=>group.some(s=>s.id===x.student_id)&&x.auto_score!=null);
+    const groupAvg=groupSubs.length?Math.round(groupSubs.reduce((a,b)=>a+(b.auto_score||0),0)/groupSubs.length):null;
+    html+=`
+    <div class="card mb-16">
+      <div class="flex justify-between align-center mb-12">
+        <div class="flex gap-12 align-center">
+          <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(74,158,255,0.12);border:1px solid rgba(74,158,255,0.25);display:flex;align-items:center;justify-content:center">
+            <i class="ti ti-school" style="color:#4a9eff;font-size:16px"></i>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700">${yr}</div>
+            <div class="text-xs mt-2">${group.length} student${group.length!==1?'s':''}</div>
+          </div>
+        </div>
+        <div class="flex gap-8 align-center">
+          ${groupAvg!=null?`<span class="text-xs">Group avg:</span><span class="badge ${groupAvg>=50?'badge-green':'badge-red'}">${groupAvg}%</span>`:''}
+        </div>
+      </div>
+      <table class="results-table">
+        <thead><tr><th>Student</th><th>Phone</th><th>Exams</th><th>Avg score</th><th>Joined</th></tr></thead>
+        <tbody>${group.map(studentRow).join('')}</tbody>
+      </table>
+    </div>`;
+  });
+
+  el('admin-students').innerHTML=html;
 }
 
 async function renderAllResults(){
