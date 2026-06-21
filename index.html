@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ExamDesk — Online Examination Platform</title>
+<title>MR:BIO — Science Examination Platform</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -22,7 +22,7 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
 
 /* ── SCIENCE CANVAS BACKGROUND ── */
-#science-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.55}
+#science-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.75}
 
 /* ── OVERLAYS ── */
 .screen-wrap{position:relative;z-index:1}
@@ -63,8 +63,8 @@ select option{background:#0d1220}
 .text-success{font-size:13px;color:#4ade80;line-height:1.5}
 .divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
 .nav{background:rgba(6,10,18,0.88);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
-.nav-brand{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;color:var(--text)}
-.brand-icon{width:34px;height:34px;background:var(--blue-dark);border-radius:var(--radius);display:flex;align-items:center;justify-content:center}
+.nav-brand{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;color:var(--text);font-family:'Courier New',monospace;letter-spacing:2px}
+.brand-icon{width:34px;height:34px;background:linear-gradient(135deg,#1a5fb4,#0d7a4a);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(74,158,255,0.3)}
 .brand-icon i{font-size:18px;color:#fff}
 .nav-right{display:flex;align-items:center;gap:12px}
 .stat-card{background:rgba(16,22,38,0.8);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;text-align:center;backdrop-filter:blur(12px)}
@@ -108,9 +108,9 @@ select option{background:#0d1220}
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;z-index:1}
 .auth-box{width:100%;max-width:420px}
 .auth-logo{text-align:center;margin-bottom:2rem}
-.logo-icon{width:64px;height:64px;background:linear-gradient(135deg,#1a5fb4,#0d3d7a);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 0 30px rgba(74,158,255,.25),0 0 60px rgba(74,158,255,.1)}
+.logo-icon{width:72px;height:72px;background:linear-gradient(135deg,#0d3d7a,#0d7a4a);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 0 30px rgba(74,158,255,.4),0 0 80px rgba(0,255,150,.15),0 0 120px rgba(74,158,255,.1)}
 .logo-icon i{font-size:32px;color:#fff}
-.logo-title{font-size:26px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,#e2e8f8,#7ab5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-title{font-size:32px;font-weight:900;letter-spacing:4px;font-family:'Courier New',monospace;background:linear-gradient(135deg,#ffffff,#4a9eff,#00ffcc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 40px rgba(74,158,255,0.4)}
 .logo-sub{color:var(--text2);margin-top:6px;font-size:14px}
 
 @media(max-width:600px){
@@ -118,16 +118,76 @@ select option{background:#0d1220}
   .exam-card{flex-direction:column;align-items:flex-start}
   .page{padding:1.25rem 1rem}.nav{padding:0 1rem}
 }
+
+/* ── MR:BIO SCI-FI EXTRAS ── */
+/* Subtle grid overlay on the whole page */
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(74,158,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74,158,255,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+/* Auth card glowing border */
+.auth-box .card{
+  border-color:rgba(74,158,255,0.25);
+  box-shadow:0 0 40px rgba(74,158,255,0.08),0 0 80px rgba(0,255,150,0.04),inset 0 0 30px rgba(74,158,255,0.02);
+}
+/* Scrolling formula ticker at the top of auth page */
+.formula-ticker{
+  position:fixed;top:0;left:0;right:0;height:28px;z-index:50;
+  background:rgba(6,10,18,0.9);border-bottom:1px solid rgba(74,158,255,0.15);
+  overflow:hidden;display:flex;align-items:center;
+}
+.formula-ticker-inner{
+  display:flex;gap:48px;white-space:nowrap;
+  animation:ticker 35s linear infinite;
+  font-family:'Courier New',monospace;font-size:11px;color:#3d6a9a;
+  padding-left:100%;
+}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.auth-wrap{padding-top:3rem}
+/* Glowing section titles */
+h2.section-title,h2[style*="font-weight:600"]{
+  text-shadow:0 0 20px rgba(74,158,255,0.2);
+}
+/* Stat cards — neon border */
+.stat-card{
+  border-color:rgba(74,158,255,0.15);
+  box-shadow:0 0 20px rgba(74,158,255,0.05);
+  position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(74,158,255,0.4),transparent);
+}
+/* Nav glow line */
+.nav::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(74,158,255,0.4),rgba(0,255,150,0.2),rgba(74,158,255,0.4),transparent);
+}
+.nav{position:relative}
+/* MR:BIO title pulse */
+.logo-title{animation:logoPulse 3s ease-in-out infinite alternate}
+@keyframes logoPulse{
+  from{filter:drop-shadow(0 0 8px rgba(74,158,255,0.4))}
+  to{filter:drop-shadow(0 0 20px rgba(0,255,200,0.5))}
+}
 </style>
 </head>
 <body>
 
 <canvas id="science-bg"></canvas>
+<div class="formula-ticker">
+  <div class="formula-ticker-inner">
+    E=mc²  |  DNA→RNA→Protein  |  PV=nRT  |  ΔG=ΔH-TΔS  |  F=ma  |  ∇×B=μ₀J  |  pH=-log[H⁺]  |  Nₐ=6.022×10²³  |  C₆H₁₂O₆+6O₂→6CO₂+6H₂O+ATP  |  sin²θ+cos²θ=1  |  e^(iπ)+1=0  |  λ=h/mv  |  F=kq₁q₂/r²  |  ΔH=ΔU+PΔV  |  rate=k[A]^m[B]^n  |  a²+b²=c²  |  E=mc²  |  DNA→RNA→Protein  |  PV=nRT  |  ΔG=ΔH-TΔS  |  F=ma  |  ∇×B=μ₀J  |  pH=-log[H⁺]  |  Nₐ=6.022×10²³  |  C₆H₁₂O₆+6O₂→6CO₂+6H₂O+ATP  |  sin²θ+cos²θ=1  |  e^(iπ)+1=0  |  λ=h/mv  |  F=kq₁q₂/r²  |  ΔH=ΔU+PΔV  |  rate=k[A]^m[B]^n  |  a²+b²=c²  |  
+  </div>
+</div>
 
 <!-- LOADING -->
 <div id="screen-loading" class="loading-screen">
   <div class="spinner"></div>
-  <span style="font-size:14px">Loading ExamDesk...</span>
+  <span style="font-size:14px;letter-spacing:2px;font-weight:600">MR:BIO</span><span style="font-size:12px;color:#3d5175">Initialising science platform...</span>
 </div>
 
 <!-- AUTH -->
@@ -135,9 +195,9 @@ select option{background:#0d1220}
   <div class="auth-wrap">
     <div class="auth-box">
       <div class="auth-logo">
-        <div class="logo-icon"><i class="ti ti-school"></i></div>
-        <div class="logo-title">ExamDesk</div>
-        <div class="logo-sub">Online examination platform</div>
+        <div class="logo-icon"><i class="ti ti-dna"></i></div>
+        <div class="logo-title">MR:BIO</div>
+        <div class="logo-sub" style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px;color:#4a9eff">[ Science Examination Platform ]</div>
       </div>
       <div class="card">
         <div class="tab-bar" id="auth-tabs">
@@ -177,7 +237,7 @@ select option{background:#0d1220}
 <!-- ADMIN -->
 <div id="screen-admin" class="hidden screen-wrap">
   <nav class="nav">
-    <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk <span class="badge badge-blue">Admin</span></div>
+    <div class="nav-brand"><div class="brand-icon"><i class="ti ti-dna"></i></div> MR:BIO <span class="badge badge-blue">Admin</span></div>
     <div class="nav-right">
       <span class="text-sm" id="admin-name-display"></span>
       <button class="btn btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i> Sign out</button>
@@ -200,7 +260,7 @@ select option{background:#0d1220}
 <!-- STUDENT -->
 <div id="screen-student" class="hidden screen-wrap">
   <nav class="nav">
-    <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk</div>
+    <div class="nav-brand"><div class="brand-icon"><i class="ti ti-dna"></i></div> MR:BIO</div>
     <div class="nav-right">
       <span class="text-sm" id="student-name-display"></span>
       <button class="btn btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i> Sign out</button>
@@ -219,7 +279,7 @@ select option{background:#0d1220}
 <!-- TAKE EXAM -->
 <div id="screen-take-exam" class="hidden screen-wrap">
   <nav class="nav">
-    <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk</div>
+    <div class="nav-brand"><div class="brand-icon"><i class="ti ti-dna"></i></div> MR:BIO</div>
     <div class="nav-right">
       <span class="timer-display" id="exam-timer-display">60:00</span>
       <button class="btn btn-sm btn-danger" onclick="confirmSubmit()"><i class="ti ti-check"></i> Submit</button>
@@ -244,7 +304,7 @@ select option{background:#0d1220}
 <!-- RESULT -->
 <div id="screen-result" class="hidden screen-wrap">
   <nav class="nav">
-    <div class="nav-brand"><div class="brand-icon"><i class="ti ti-school"></i></div> ExamDesk</div>
+    <div class="nav-brand"><div class="brand-icon"><i class="ti ti-dna"></i></div> MR:BIO</div>
     <div class="nav-right"><button class="btn btn-sm" onclick="goBackToDashboard()"><i class="ti ti-arrow-left"></i> Back</button></div>
   </nav>
   <div class="page" style="max-width:700px"><div id="result-content"></div></div>
@@ -343,12 +403,41 @@ function setBtn(id,loading,label){
   const COLORS=['#1a5fb4','#0d7a4a','#7a1a5f','#7a5f1a','#1a5f7a','#5f1a7a'];
 
   const SCIENCE_SYMBOLS=[
-    'E=mc²','∇×B=μ₀J','F=ma','PV=nRT','ΔG=ΔH-TΔS',
-    'λ=h/mv','∮E·dA=Q/ε₀','H₂O','DNA','ATP',
-    'π','∞','∑','∫','∂','∇','α','β','γ','Ω',
-    'Fe','CO₂','NaCl','C₆H₁₂O₆','NH₃',
-    '6.022×10²³','9.8m/s²','3×10⁸m/s',
-    'sin²θ+cos²θ=1','a²+b²=c²'
+    // Physics
+    'E=mc²','F=ma','p=mv','W=Fd','P=IV',
+    'KE=½mv²','PE=mgh','v=fλ','c=3×10⁸m/s',
+    'F=kq₁q₂/r²','E=hf','ΔE=hΔf',
+    '∇×B=μ₀J+μ₀ε₀∂E/∂t','∇·E=ρ/ε₀',
+    '∮B·dl=μ₀I','∇²ψ=1/c²·∂²ψ/∂t²',
+    'F=qvB','τ=rF sinθ','L=Iω',
+    // Chemistry
+    'H₂O','CO₂','NaCl','NH₃','H₂SO₄',
+    'CH₄','C₆H₁₂O₆','C₂H₅OH','HCl','NaOH',
+    'ΔG=ΔH-TΔS','K=e^(-ΔG/RT)',
+    'pH=-log[H⁺]','PV=nRT','Q=mcΔT',
+    'ΔH°rxn=ΣΔH°f(products)-ΣΔH°f(reactants)',
+    'rate=k[A]^m[B]^n','Keq=[C]^c[D]^d/[A]^a[B]^b',
+    'Fe','Mg','Ca','Na','K','Cu','Zn','Au','Ag',
+    // Biology
+    'DNA','RNA','ATP','ADP','mRNA','tRNA',
+    'C₆H₁₂O₆+6O₂→6CO₂+6H₂O+ATP',
+    '6CO₂+6H₂O+light→C₆H₁₂O₆+6O₂',
+    'A-T','G-C','5'→3'','ATCG','AUCG',
+    // Mathematics
+    'π=3.14159...','e=2.71828...','∞',
+    '∑','∫','∂','∇','∆','∏','∮',
+    'sin²θ+cos²θ=1','e^(iπ)+1=0',
+    'a²+b²=c²','f'(x)=lim(h→0)[f(x+h)-f(x)]/h',
+    '∫e^x dx=e^x+C','∇²f=∂²f/∂x²+∂²f/∂y²',
+    // Greek letters
+    'α','β','γ','δ','ε','ζ','η','θ',
+    'λ','μ','ν','ξ','π','ρ','σ','τ',
+    'φ','χ','ψ','ω','Γ','Δ','Λ','Σ','Ω',
+    // Constants
+    'Nₐ=6.022×10²³','h=6.626×10⁻³⁴J·s',
+    'R=8.314J/mol·K','kB=1.38×10⁻²³J/K',
+    'g=9.81m/s²','G=6.674×10⁻¹¹N·m²/kg²',
+    'ε₀=8.85×10⁻¹²F/m','μ₀=4π×10⁻⁷T·m/A'
   ];
 
   function resize(){
@@ -361,7 +450,7 @@ function setBtn(id,loading,label){
     nodes=[]; particles=[]; formulas=[]; orbits=[];
 
     // Network nodes (neurons / molecules)
-    const nodeCount=Math.floor((W*H)/22000);
+    const nodeCount=Math.floor((W*H)/14000);
     for(let i=0;i<nodeCount;i++){
       nodes.push({
         x:Math.random()*W, y:Math.random()*H,
@@ -372,21 +461,21 @@ function setBtn(id,loading,label){
       });
     }
 
-    // Floating formula/symbol labels
-    const fCount=Math.floor((W*H)/80000);
+    // Floating formula/symbol labels — dense coverage
+    const fCount=Math.floor((W*H)/18000);
     for(let i=0;i<fCount;i++){
       formulas.push({
         x:Math.random()*W, y:Math.random()*H,
         vx:(Math.random()-.5)*0.18, vy:(Math.random()-.5)*0.18,
         text:SCIENCE_SYMBOLS[Math.floor(Math.random()*SCIENCE_SYMBOLS.length)],
-        size:Math.random()*8+10,
-        alpha:Math.random()*0.3+0.08,
+        size:Math.random()*10+11,
+        alpha:Math.random()*0.35+0.12,
         color:COLORS[Math.floor(Math.random()*COLORS.length)]
       });
     }
 
     // Atom orbits
-    const aCount=Math.floor((W*H)/120000)+2;
+    const aCount=Math.floor((W*H)/60000)+4;
     for(let i=0;i<aCount;i++){
       const cx=Math.random()*W, cy=Math.random()*H;
       const electrons=Math.floor(Math.random()*3)+2;
@@ -432,8 +521,8 @@ function setBtn(id,loading,label){
       for(let j=i+1;j<nodes.length;j++){
         const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
         const dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<130){
-          const alpha=0.12*(1-dist/130);
+        if(dist<160){
+          const alpha=0.18*(1-dist/160);
           ctx.strokeStyle=`rgba(74,158,255,${alpha})`;
           ctx.beginPath();
           ctx.moveTo(nodes[i].x,nodes[i].y);
