@@ -654,11 +654,19 @@ function setBtn(id,loading,label){
 
 // ── INIT ────────────────────────────────────────────────
 (async function init(){
+  // Hard safety net: if anything hangs, show auth after 6s
+  const safetyTimer=setTimeout(()=>{
+    console.warn('Safety timeout triggered');
+    hide('screen-loading');
+    show('screen-auth');
+    el('login-error').textContent='⚠ Connection is slow. Try signing in anyway.';
+    show('login-error');
+  },6000);
+
   try{
-    // Quick reachability check with timeout
-    const pingTimeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
-    const ping=sb.auth.getSession();
-    const{data:{session:s},error}=await Promise.race([ping,pingTimeout]);
+    const pingTimeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
+    const{data:{session:s},error}=await Promise.race([sb.auth.getSession(),pingTimeout]);
+    clearTimeout(safetyTimer);
     if(error) throw error;
     if(s){
       session=s;
@@ -668,12 +676,12 @@ function setBtn(id,loading,label){
       show('screen-auth');
     }
   }catch(e){
+    clearTimeout(safetyTimer);
     console.error('Init error:',e);
     hide('screen-loading');
-    // Show auth screen but also show a diagnostic message
     show('screen-auth');
     if(e.message==='timeout'||e.message.includes('fetch')||e.message.includes('network')){
-      el('login-error').textContent='⚠ Cannot reach the server. Check your internet connection or try again in a moment.';
+      el('login-error').textContent='⚠ Cannot reach the server. Check your internet and try again.';
       show('login-error');
     }
   }
@@ -691,29 +699,49 @@ function setBtn(id,loading,label){
 })();
 
 async function loadProfile(){
+  hide('screen-loading');
   try{
-    hide('screen-loading');
-    // Use array select (not .single()) to avoid 406 when row not found
-    const{data,error}=await sb.from('profiles').select('id,name,role').eq('id',session.user.id);
+    // 5s timeout on profile fetch
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('profile_timeout')),5000));
+    const query=sb.from('profiles').select('id,name,role').eq('id',session.user.id);
+    const{data,error}=await Promise.race([query,timeout]);
+
     if(error){
       console.error('Profile error:',error.message,'code:',error.code);
-      // Fallback: read from user_metadata if profile table fails
+      // Fallback: use user_metadata set during signup
       const meta=session.user.user_metadata||{};
       if(meta.name&&meta.role){
         profile={id:session.user.id,name:meta.name,role:meta.role};
         renderScreen(); return;
       }
+      el('login-error').textContent='Profile load error: '+error.message+' — try signing in again.';
+      show('login-error');
       show('screen-auth'); return;
     }
     if(!data||data.length===0){
+      // No profile row — maybe registration didn't complete. Try metadata.
+      const meta=session.user.user_metadata||{};
+      if(meta.name&&meta.role){
+        // Try to create the missing profile row
+        await sb.from('profiles').insert({id:session.user.id,name:meta.name,role:meta.role});
+        profile={id:session.user.id,name:meta.name,role:meta.role};
+        renderScreen(); return;
+      }
       console.error('No profile found for',session.user.id);
+      el('login-error').textContent='Account setup incomplete. Please register again.';
+      show('login-error');
       show('screen-auth'); return;
     }
     profile=data[0];
     renderScreen();
   }catch(e){
-    console.error('loadProfile exception:',e);
-    hide('screen-loading');
+    console.error('loadProfile exception:',e.message);
+    // Last resort: try user_metadata
+    const meta=session.user.user_metadata||{};
+    if(meta.name&&meta.role){
+      profile={id:session.user.id,name:meta.name,role:meta.role};
+      renderScreen(); return;
+    }
     show('screen-auth');
   }
 }
