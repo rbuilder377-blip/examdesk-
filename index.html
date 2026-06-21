@@ -178,8 +178,8 @@ body::before{
 }
 /* Scrolling formula ticker at the top of auth page */
 .formula-ticker{
-  position:fixed;top:0;left:0;right:0;height:28px;z-index:50;
-  background:rgba(6,10,18,0.9);border-bottom:1px solid rgba(74,158,255,0.15);
+  position:fixed;bottom:0;left:0;right:0;height:28px;z-index:50;
+  background:rgba(6,10,18,0.9);border-top:1px solid rgba(74,158,255,0.15);
   overflow:hidden;display:flex;align-items:center;
 }
 .formula-ticker-inner{
@@ -189,7 +189,7 @@ body::before{
   padding-left:100%;
 }
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.auth-wrap{padding-top:3rem}
+.auth-wrap{padding-top:0}
 /* Glowing section titles */
 h2.section-title,h2[style*="font-weight:600"]{
   text-shadow:0 0 20px rgba(74,158,255,0.2);
@@ -1035,7 +1035,8 @@ async function viewSubmission(sid){
   if(exam&&exam.questions){
     exam.questions.forEach((q,i)=>{
       const ans=s.answers[q.id];
-      html+='<div class="question-block mb-12"><div class="q-num">Q'+(i+1)+' <span class="badge badge-gray">'+(qTypeLabel(q.type))+'</span></div>'+(q.image?'<img src="'+q.image+'" class="q-image" alt="">':'')+ '<div class="q-text" style="direction:auto">'+(q.text)+'</div>';
+      const qImg1=q.image?'<img src="'+q.image+'" class="q-image" alt="">':'';
+      html+='<div class="question-block mb-12"><div class="q-num">Q'+(i+1)+' <span class="badge badge-gray">'+(qTypeLabel(q.type))+'</span></div>'+qImg1+'<div class="q-text" style="direction:auto">'+(q.text)+'</div>';
       if(q.type==='mcq'){
         q.options.forEach((o,oi)=>{
           const isAns=String(ans)===String(oi),isCorrect=String(q.correct)===String(oi);
@@ -1115,7 +1116,7 @@ function renderQEditor(){
         <input type="file" id="img-input-${q.id}" accept="image/*" onchange="handleImgUpload('${q.id}',this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
         <i class="ti ti-photo-plus" style="font-size:20px;margin-bottom:4px;display:block"></i>
         <span>Click or paste an image (optional) / انقر أو الصق صورة</span>
-        "+(q.image?'<img src="'+q.image+'" class="img-preview"><button class="btn btn-sm btn-danger img-remove" onclick="event.stopPropagation();removeQImage(\''+q.id+'\')" ><i class="ti ti-x"></i> Remove</button>':'')+"
+        "+(q.image?'<img src="'+q.image+'" class="img-preview"><button class="btn btn-sm btn-danger img-remove" onclick="removeQImage(\''+q.id+'\')" >Remove</button>':'')+"
       </div>
       ${inner}
     </div>`;
@@ -1237,12 +1238,12 @@ function renderExamQuestions(){
     else if(q.type==='short'){opts=`<input type="text" placeholder="${isAr?'اكتب إجابتك...':'Type your answer...'}" oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="margin-top:4px;direction:auto">`;}
     else{opts=`<textarea rows="6" placeholder="${isAr?'اكتب إجابتك هنا...':'Write your answer here...'}" oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="width:100%;margin-top:8px;resize:vertical;direction:auto"></textarea>`;}
     const qLabel=isAr?`السؤال ${i+1} من ${currentExam.questions.length}`:`Question ${i+1} of ${currentExam.questions.length}`;
-    return`<div class="question-block">
-      <div class="q-num">${qLabel} <span class="badge badge-gray" style="font-size:10px">${qTypeLabel(q.type)}</span></div>
-      ${q.image?`<img src="${q.image}" class="q-image" alt="question image">`:''}
-      <div class="q-text" style="direction:auto">${q.text}</div>
-      ${opts}
-    </div>`;
+    return '<div class="question-block">'+
+      '<div class="q-num">'+qLabel+' <span class="badge badge-gray" style="font-size:10px">'+qTypeLabel(q.type)+'</span></div>'+
+      (q.image?'<img src="'+q.image+'" class="q-image" alt="question image">':'')+
+      '<div class="q-text" style="direction:auto">'+q.text+'</div>'+
+      opts+
+    '</div>';
   }).join('');
 }
 
@@ -1328,7 +1329,8 @@ function showResult(sub,exam){
         feedback=`<div style="background:rgba(10,18,35,0.8);padding:10px 14px;border-radius:var(--radius);font-size:14px;margin-top:8px;min-height:40px">${ans||'<em style="color:var(--text3)">No answer</em>'}</div>`;
         if(q.type==='short'&&q.modelAnswer)feedback+=`<div class="text-xs mt-8"><strong>Model answer:</strong> ${q.modelAnswer}</div>`;
       }
-      html+='<div class="question-block mb-12"><div class="q-num">Q'+(i+1)+' <span class="badge badge-gray">'+(qTypeLabel(q.type))+'</span></div>'+(q.image?'<img src="'+q.image+'" class="q-image" alt="">':'')+ '<div class="q-text" style="direction:auto">'+(q.text)+'</div>'+(feedback)+'</div>';
+      const qImg2=q.image?'<img src="'+q.image+'" class="q-image" alt="">':'';
+      html+='<div class="question-block mb-12"><div class="q-num">Q'+(i+1)+' <span class="badge badge-gray">'+(qTypeLabel(q.type))+'</span></div>'+qImg2+'<div class="q-text" style="direction:auto">'+(q.text)+'</div>'+feedback+'</div>';
     });
   }
   el('result-content').innerHTML=html;
