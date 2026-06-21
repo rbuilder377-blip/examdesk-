@@ -216,6 +216,12 @@ h2.section-title,h2[style*="font-weight:600"]{
   from{filter:drop-shadow(0 0 8px rgba(74,158,255,0.4))}
   to{filter:drop-shadow(0 0 20px rgba(0,255,200,0.5))}
 }
+
+/* Disabled next button during exam */
+#btn-next-q:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+#btn-next-q:disabled:hover{background:var(--blue-dark);}
+/* Question block min height for consistent layout */
+.question-block{min-height:200px;}
 </style>
 </head>
 <body>
@@ -708,6 +714,24 @@ function setBtn(id,loading,label){
   resize(); draw();
 })();
 
+// ── PREVENT ACCIDENTAL REFRESH ──────────────────────────
+window.addEventListener('beforeunload', function(e){
+  if(currentExam){
+    e.preventDefault();
+    e.returnValue='You are in the middle of an exam. Are you sure you want to leave?';
+    return e.returnValue;
+  }
+});
+// Intercept F5 / Ctrl+R during exam
+document.addEventListener('keydown', function(e){
+  if(currentExam){
+    if(e.key==='F5'||(e.ctrlKey&&e.key==='r')||(e.ctrlKey&&e.key==='R')){
+      e.preventDefault();
+      alert('You cannot refresh during an exam.');
+    }
+  }
+});
+
 // ── INIT ────────────────────────────────────────────────
 (async function init(){
   // Hard safety net: if anything hangs, show auth after 6s
@@ -743,11 +767,17 @@ function setBtn(id,loading,label){
   }
 
   sb.auth.onAuthStateChange(async(event,s)=>{
+    // Ignore token refresh events — they cause unnecessary re-renders
+    if(event==='TOKEN_REFRESHED') return;
     session=s;
-    if(s){
+    if(s&&!profile){
+      // Only load profile if we don't already have one (prevents re-render on focus)
       await loadProfile();
-    } else {
+    } else if(!s){
       profile=null;
+      currentExam=null;
+      shuffledQuestions=[];
+      clearInterval(timerInterval);
       hideAll('screen-admin','screen-student','screen-take-exam','screen-result');
       show('screen-auth');
     }
@@ -1047,8 +1077,9 @@ async function viewSubmission(sid){
     <div class="text-xs mt-4">${exam?exam.title:'Deleted'} &middot; ${new Date(s.submitted_at).toLocaleString()}</div>
     ${s.auto_score!=null?`<div class="mt-8"><span class="badge ${pass?'badge-green':'badge-red'}">${s.auto_score}% — ${pass?'Passed':'Failed'}</span></div>`:''}
   </div>`;
-  if(exam&&exam.questions){
-    exam.questions.forEach((q,i)=>{
+  const reviewQs=(shuffledQuestions&&shuffledQuestions.length>0)?shuffledQuestions:(exam?exam.questions:[]);
+  if(reviewQs&&reviewQs.length){
+    reviewQs.forEach((q,i)=>{
       const ans=s.answers[q.id];
       const qImg1=q.image?'<img src="'+q.image+'" class="q-image" alt="">':'';
       html+='<div class="question-block mb-12"><div class="q-num">Q'+(i+1)+' <span class="badge badge-gray">'+(qTypeLabel(q.type))+'</span></div>'+qImg1+'<div class="q-text" style="direction:auto">'+(q.text)+'</div>';
@@ -1248,56 +1279,146 @@ async function renderMyResults(){
 }
 
 // ── EXAM TAKING ──────────────────────────────────────────
+let currentQIndex=0;
+let shuffledQuestions=[];
+
+function shuffleArray(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
 async function startExam(examId){
   const{data:exam}=await sb.from('exams').select('*').eq('id',examId).single();
   if(!exam)return;
-  if(!confirm(`Start "${exam.title}"?\n\nDuration: ${exam.duration} minutes\nQuestions: ${(exam.questions||[]).length}\n\nThe timer starts immediately.`))return;
-  currentExam=exam; examAnswers={};
-  hide('screen-student'); show('screen-take-exam');
-  el('exam-header').innerHTML=`
-    <h1 style="font-size:22px;font-weight:700;margin-bottom:6px">${exam.title}</h1>
-    ${exam.description?`<p class="text-sm">${exam.description}</p>`:''}
-    <div class="flex gap-12 mt-8">
-      <span class="badge badge-gray"><i class="ti ti-help-circle"></i> ${(exam.questions||[]).length} questions</span>
-      <span class="badge badge-amber"><i class="ti ti-clock"></i> ${exam.duration} min</span>
-      <span class="badge badge-blue"><i class="ti ti-percentage"></i> Pass: ${exam.passmark||50}%</span>
-    </div>`;
-  renderExamQuestions(); startTimer(exam.duration*60);
+  if(!confirm('Start "'+exam.title+'"?\n\nDuration: '+exam.duration+' minutes\nQuestions: '+((exam.questions||[]).length)+'\n\nThe timer starts immediately.'))return;
+  currentExam=exam;
+  examAnswers={};
+  currentQIndex=0;
+  // Shuffle questions for anti-cheat
+  shuffledQuestions=shuffleArray(exam.questions||[]);
+  hide('screen-student');
+  show('screen-take-exam');
+  const isAr=document.getElementById('html-root').classList.contains('lang-ar');
+  el('exam-header').innerHTML=
+    '<h1 style="font-size:20px;font-weight:700;margin-bottom:6px">'+exam.title+'</h1>'+
+    (exam.description?'<p class="text-sm">'+exam.description+'</p>':'')+
+    '<div class="flex gap-12 mt-8">'+
+    '<span class="badge badge-gray"><i class="ti ti-help-circle"></i> '+(exam.questions||[]).length+' '+(isAr?'سؤال':'questions')+'</span>'+
+    '<span class="badge badge-amber"><i class="ti ti-clock"></i> '+exam.duration+' '+(isAr?'دقيقة':'min')+'</span>'+
+    '<span class="badge badge-blue"><i class="ti ti-percentage"></i> '+(isAr?'النجاح:':'Pass:')+' '+(exam.passmark||50)+'%</span>'+
+    '</div>';
+  renderSingleQuestion();
+  startTimer(exam.duration*60);
 }
 
-function renderExamQuestions(){
+function renderSingleQuestion(){
   const isAr=document.getElementById('html-root').classList.contains('lang-ar');
-  el('q-progress-text').textContent=isAr?`إجمالي الأسئلة: ${currentExam.questions.length}`:`${currentExam.questions.length} questions total`;
-  updateProgress();
-  el('exam-questions').innerHTML=currentExam.questions.map((q,i)=>{
-    let opts='';
-    const trueLabel=isAr?'صح':'True';
-    const falseLabel=isAr?'خطأ':'False';
-    if(q.type==='mcq'){opts=q.options.map((o,oi)=>`<div class="option-row" id="opt_${q.id}_${oi}" onclick="selectOpt('${q.id}',${oi})" style="direction:auto">${o}</div>`).join('');}
-    else if(q.type==='truefalse'){opts=`<div class="option-row" id="opt_${q.id}_0" onclick="selectOpt('${q.id}',0)">${trueLabel}</div><div class="option-row" id="opt_${q.id}_1" onclick="selectOpt('${q.id}',1)">${falseLabel}</div>`;}
-    else if(q.type==='short'){opts=`<input type="text" placeholder="${isAr?'اكتب إجابتك...':'Type your answer...'}" oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="margin-top:4px;direction:auto">`;}
-    else{opts=`<textarea rows="6" placeholder="${isAr?'اكتب إجابتك هنا...':'Write your answer here...'}" oninput="examAnswers['${q.id}']=this.value;updateProgress()" style="width:100%;margin-top:8px;resize:vertical;direction:auto"></textarea>`;}
-    const qLabel=isAr?`السؤال ${i+1} من ${currentExam.questions.length}`:`Question ${i+1} of ${currentExam.questions.length}`;
-    return '<div class="question-block">'+
-      '<div class="q-num">'+qLabel+' <span class="badge badge-gray" style="font-size:10px">'+qTypeLabel(q.type)+'</span></div>'+
-      (q.image?'<img src="'+q.image+'" class="q-image" alt="question image">':'')+
-      '<div class="q-text" style="direction:auto">'+q.text+'</div>'+
-      opts+
+  const q=shuffledQuestions[currentQIndex];
+  const total=shuffledQuestions.length;
+  const answered=shuffledQuestions.filter(x=>examAnswers[x.id]!=null&&examAnswers[x.id]!=='').length;
+
+  // Progress
+  el('q-progress-text').textContent=isAr?'السؤال '+(currentQIndex+1)+' من '+total:'Question '+(currentQIndex+1)+' of '+total;
+  el('q-answered-text').textContent=isAr?answered+' / '+total+' تمت الإجابة':answered+' / '+total+' answered';
+  el('q-progress-fill').style.width=Math.round(((currentQIndex)/total)*100)+'%';
+  el('q-nav-indicator').textContent=(currentQIndex+1)+' / '+total;
+
+  // Nav buttons
+  const prevBtn=el('btn-prev-q');
+  const nextBtn=el('btn-next-q');
+  prevBtn.style.visibility=currentQIndex>0?'visible':'hidden';
+  const isLast=currentQIndex===total-1;
+  const hasAnswer=examAnswers[q.id]!=null&&examAnswers[q.id]!=='';
+
+  if(isLast){
+    nextBtn.innerHTML='<i class="ti ti-check"></i> '+(isAr?'تسليم الاختبار':'Submit exam');
+    nextBtn.className='btn btn-success';
+    nextBtn.onclick=confirmSubmit;
+  } else {
+    nextBtn.innerHTML=(isAr?'التالي':'Next')+' <i class="ti ti-arrow-right"></i>';
+    nextBtn.className='btn btn-primary';
+    nextBtn.onclick=examNavNext;
+    // Lock next if not answered (except essay/short which can be skipped forward but not skipped if empty on required)
+    if(!hasAnswer && (q.type==='mcq'||q.type==='truefalse')){
+      nextBtn.disabled=true;
+      nextBtn.title=isAr?'يجب الإجابة على هذا السؤال أولاً':'Answer this question to continue';
+    } else {
+      nextBtn.disabled=false;
+      nextBtn.title='';
+    }
+  }
+
+  // Build question HTML
+  const trueLabel=isAr?'صح':'True';
+  const falseLabel=isAr?'خطأ':'False';
+  let opts='';
+  if(q.type==='mcq'){
+    opts=q.options.map((o,oi)=>{
+      const sel=String(examAnswers[q.id])===String(oi)?'selected':'';
+      return '<div class="option-row '+sel+'" id="opt_'+q.id+'_'+oi+'" onclick="selectOpt(\''+q.id+'\','+oi+')" style="direction:auto">'+o+'</div>';
+    }).join('');
+  } else if(q.type==='truefalse'){
+    const s0=String(examAnswers[q.id])==='0'?'selected':'';
+    const s1=String(examAnswers[q.id])==='1'?'selected':'';
+    opts='<div class="option-row '+s0+'" id="opt_'+q.id+'_0" onclick="selectOpt(\''+q.id+'\',0)">'+trueLabel+'</div>'+
+         '<div class="option-row '+s1+'" id="opt_'+q.id+'_1" onclick="selectOpt(\''+q.id+'\',1)">'+falseLabel+'</div>';
+  } else if(q.type==='short'){
+    const val=examAnswers[q.id]||'';
+    opts='<input type="text" id="ans-input-'+q.id+'" value="'+val.replace(/"/g,'&quot;')+'" placeholder="'+(isAr?'\u0627\u0643\u062a\u0628 \u0625\u062c\u0627\u0628\u062a\u0643...':'Type your answer...')+'" oninput="examAnswers[\''+q.id+'\']=this.value;renderSingleQuestion()" style="margin-top:4px;direction:auto">';
+  } else {
+    const val=examAnswers[q.id]||'';
+    opts='<textarea id="ans-input-'+q.id+'" rows="6" placeholder="'+(isAr?'\u0627\u0643\u062a\u0628 \u0625\u062c\u0627\u0628\u062a\u0643 \u0647\u0646\u0627...':'Write your answer here...')+'" oninput="examAnswers[\''+q.id+'\']=this.value;renderSingleQuestion()" style="width:100%;margin-top:8px;resize:vertical;direction:auto">'+val+'</textarea>';
+  }
+
+  const qLabel=isAr?'السؤال '+(currentQIndex+1)+' من '+total:'Question '+(currentQIndex+1)+' of '+total;
+  el('exam-question-single').innerHTML=
+    '<div class="question-block" style="min-height:260px">'+
+    '<div class="q-num">'+qLabel+' <span class="badge badge-gray" style="font-size:10px">'+qTypeLabel(q.type)+'</span></div>'+
+    (q.image?'<img src="'+q.image+'" class="q-image" alt="question image">':'')+
+    '<div class="q-text" style="direction:auto">'+q.text+'</div>'+
+    opts+
     '</div>';
-  }).join('');
+
+  // Re-focus text input if present (prevents scroll reset)
+  const inp=document.getElementById('ans-input-'+q.id);
+  if(inp){setTimeout(()=>{const len=inp.value.length;try{inp.setSelectionRange(len,len);}catch(e){}},0);}
+}
+
+function examNavNext(){
+  const q=shuffledQuestions[currentQIndex];
+  const hasAnswer=examAnswers[q.id]!=null&&examAnswers[q.id]!=='';
+  const isAr=document.getElementById('html-root').classList.contains('lang-ar');
+  if(!hasAnswer&&(q.type==='mcq'||q.type==='truefalse')){
+    alert(isAr?'يجب الإجابة على هذا السؤال أولاً لكي تتقدم':'Please answer this question before moving on.');
+    return;
+  }
+  if(currentQIndex<shuffledQuestions.length-1){
+    currentQIndex++;
+    renderSingleQuestion();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+function examNavPrev(){
+  if(currentQIndex>0){
+    currentQIndex--;
+    renderSingleQuestion();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
 }
 
 function selectOpt(qId,oi){
   examAnswers[qId]=oi;
-  document.querySelectorAll(`[id^="opt_${qId}_"]`).forEach(o=>o.classList.remove('selected'));
-  const s=document.getElementById(`opt_${qId}_${oi}`);if(s)s.classList.add('selected');
-  updateProgress();
+  renderSingleQuestion();
 }
 function updateProgress(){
   if(!currentExam)return;
-  const answered=currentExam.questions.filter(q=>examAnswers[q.id]!=null&&examAnswers[q.id]!=='').length;
-  const total=currentExam.questions.length;
-  el('q-answered-text').textContent=`${answered} / ${total} answered`;
+  const answered=shuffledQuestions.filter(q=>examAnswers[q.id]!=null&&examAnswers[q.id]!=='').length;
+  const total=shuffledQuestions.length;
+  el('q-answered-text').textContent=answered+' / '+total+' answered';
   el('q-progress-fill').style.width=Math.round((answered/total)*100)+'%';
 }
 
@@ -1325,11 +1446,13 @@ function confirmSubmit(){
 async function submitExam(){
   clearInterval(timerInterval);
   const exam=currentExam;
-  const gradeable=exam.questions.filter(q=>q.type==='mcq'||q.type==='truefalse');
+  // Use shuffledQuestions so score is based on the actual shuffled set
+  const qs=shuffledQuestions.length>0?shuffledQuestions:(exam.questions||[]);
+  const gradeable=qs.filter(q=>q.type==='mcq'||q.type==='truefalse');
   let auto_score=null;
   if(gradeable.length>0){
     const correct=gradeable.filter(q=>String(examAnswers[q.id])===String(q.correct)).length;
-    auto_score=Math.round((correct/exam.questions.length)*100);
+    auto_score=Math.round((correct/qs.length)*100);
   }
   const{data:sub,error}=await sb.from('submissions')
     .insert({exam_id:exam.id,student_id:session.user.id,answers:examAnswers,auto_score})
@@ -1373,6 +1496,7 @@ function showResult(sub,exam){
       html+='<div class="question-block mb-12"><div class="q-num">Q'+(i+1)+' <span class="badge badge-gray">'+(qTypeLabel(q.type))+'</span></div>'+qImg2+'<div class="q-text" style="direction:auto">'+(q.text)+'</div>'+feedback+'</div>';
     });
   }
+  currentExam=null; shuffledQuestions=[];
   el('result-content').innerHTML=html;
 }
 
