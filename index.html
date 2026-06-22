@@ -253,11 +253,44 @@ h2.section-title,h2[style*="font-weight:600"]{
           <button class="tab active" onclick="switchAuthTab('login')"><i class="ti ti-login"></i> Sign in</button>
           <button class="tab" onclick="switchAuthTab('register')"><i class="ti ti-user-plus"></i> Create account</button>
         </div>
+
+        <!-- LOGIN -->
         <div id="auth-login">
           <div class="mb-12"><div class="label">Email</div><input type="email" id="login-email" placeholder="your@email.com"></div>
           <div class="mb-16"><div class="label">Password</div><input type="password" id="login-pass" placeholder="••••••••"></div>
           <div id="login-error" class="text-error mb-12 hidden"></div>
           <button class="btn btn-primary" id="login-btn" style="width:100%;justify-content:center" onclick="doLogin()"><i class="ti ti-login"></i> Sign in</button>
+          <div style="text-align:center;margin-top:14px">
+            <button onclick="switchAuthTab('forgot')" style="background:none;border:none;color:var(--blue);font-size:13px;cursor:pointer;text-decoration:underline">Forgot password?</button>
+          </div>
+        </div>
+
+        <!-- FORGOT PASSWORD -->
+        <div id="auth-forgot" class="hidden">
+          <div style="text-align:center;margin-bottom:16px">
+            <div style="width:48px;height:48px;background:rgba(74,158,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+              <i class="ti ti-lock-open" style="font-size:22px;color:#4a9eff"></i>
+            </div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px">Reset your password</div>
+            <div class="text-xs">Enter your email and we will send you a reset link</div>
+          </div>
+          <div class="mb-12"><div class="label">Email</div><input type="email" id="forgot-email" placeholder="your@email.com"></div>
+          <div id="forgot-error" class="text-error mb-12 hidden"></div>
+          <div id="forgot-success" class="info-box mb-12 hidden"></div>
+          <button class="btn btn-primary" id="forgot-btn" style="width:100%;justify-content:center" onclick="doForgotPassword()"><i class="ti ti-send"></i> Send reset link</button>
+          <div style="text-align:center;margin-top:14px">
+            <button onclick="switchAuthTab('login')" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer"><i class="ti ti-arrow-left" style="font-size:12px"></i> Back to sign in</button>
+          </div>
+        </div>
+
+        <!-- EMAIL CONFIRMED SUCCESS -->
+        <div id="auth-confirmed" class="hidden" style="text-align:center;padding:1rem 0">
+          <div style="width:56px;height:56px;background:rgba(74,222,128,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+            <i class="ti ti-circle-check" style="font-size:28px;color:#4ade80"></i>
+          </div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:8px;color:#4ade80">Email confirmed!</div>
+          <div class="text-sm mb-16">Your account is ready. Sign in to continue.</div>
+          <button class="btn btn-primary" style="justify-content:center" onclick="switchAuthTab('login')"><i class="ti ti-login"></i> Sign in now</button>
         </div>
         <div id="auth-register" class="hidden">
           <div class="grid-2 mb-12">
@@ -286,6 +319,34 @@ h2.section-title,h2[style*="font-weight:600"]{
           <button class="btn btn-primary" id="reg-btn" style="width:100%;justify-content:center" onclick="doRegister()"><i class="ti ti-user-plus"></i> Create account</button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RESET PASSWORD -->
+<div id="modal-reset-password" class="hidden">
+  <div class="modal-overlay">
+    <div class="modal" style="max-width:400px;margin-top:80px">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="width:52px;height:52px;background:rgba(74,158,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+          <i class="ti ti-lock" style="font-size:24px;color:#4a9eff"></i>
+        </div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:6px">Set new password</div>
+        <div class="text-xs">Choose a strong password for your account</div>
+      </div>
+      <div class="mb-12">
+        <div class="label">New password</div>
+        <input type="password" id="reset-pass" placeholder="Min 6 characters">
+      </div>
+      <div class="mb-16">
+        <div class="label">Confirm password</div>
+        <input type="password" id="reset-pass-confirm" placeholder="Repeat password">
+      </div>
+      <div id="reset-error" class="text-error mb-12 hidden"></div>
+      <div id="reset-success" class="info-box mb-12 hidden"></div>
+      <button class="btn btn-primary" id="reset-btn" style="width:100%;justify-content:center" onclick="doResetPassword()">
+        <i class="ti ti-check"></i> Update password
+      </button>
     </div>
   </div>
 </div>
@@ -769,6 +830,13 @@ document.addEventListener('keydown', function(e){
   sb.auth.onAuthStateChange(async(event,s)=>{
     // Ignore token refresh events — they cause unnecessary re-renders
     if(event==='TOKEN_REFRESHED') return;
+    if(event==='PASSWORD_RECOVERY'){
+      // User clicked reset link in email — show new password form
+      show('screen-auth'); hide('screen-loading');
+      showPasswordResetModal();
+      return;
+    }
+    if(event==='USER_UPDATED'&&session) return; // handled in doResetPassword
     session=s;
     if(s&&!profile){
       // Only load profile if we don't already have one (prevents re-render on focus)
@@ -845,11 +913,62 @@ function renderScreen(){
 
 // ── AUTH ────────────────────────────────────────────────
 function switchAuthTab(t){
-  el('auth-login').classList.toggle('hidden', t!=='login');
-  el('auth-register').classList.toggle('hidden', t!=='register');
-  el('auth-tabs').querySelectorAll('.tab').forEach((b,i)=>
-    b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
+  ['auth-login','auth-register','auth-forgot','auth-confirmed'].forEach(id=>hide(id));
+  if(t==='login'||t==='register'||t==='forgot'||t==='confirmed'){
+    show('auth-'+t);
+  }
+  // Highlight tab bar for login/register only
+  el('auth-tabs').querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1));
+  });
   hide('login-error'); hide('reg-error'); hide('reg-success');
+  hide('forgot-error'); hide('forgot-success');
+}
+
+async function doForgotPassword(){
+  const email=el('forgot-email').value.trim().toLowerCase();
+  hide('forgot-error'); hide('forgot-success');
+  if(!email){ el('forgot-error').textContent='Please enter your email address.'; show('forgot-error'); return; }
+  setBtn('forgot-btn',true,'');
+  try{
+    const{error}=await sb.auth.resetPasswordForEmail(email,{
+      redirectTo: window.location.origin+window.location.pathname+'?reset=true'
+    });
+    setBtn('forgot-btn',false,'<i class="ti ti-send"></i> Send reset link');
+    if(error){
+      el('forgot-error').textContent=error.message;
+      show('forgot-error');
+    } else {
+      el('forgot-success').innerHTML=
+        '<i class="ti ti-mail" style="margin-right:6px"></i>'+
+        'Reset link sent to <strong>'+email+'</strong>. Check your inbox and spam folder.';
+      show('forgot-success');
+    }
+  }catch(e){
+    setBtn('forgot-btn',false,'<i class="ti ti-send"></i> Send reset link');
+    el('forgot-error').textContent='Connection error. Please try again.';
+    show('forgot-error');
+  }
+}
+
+// Handle email confirmation & password reset redirects
+(function handleAuthRedirect(){
+  const hash=window.location.hash;
+  const params=new URLSearchParams(window.location.search);
+  // Supabase puts token in hash for email confirm
+  if(hash.includes('type=signup')||hash.includes('type=email_change')){
+    // Let onAuthStateChange handle it, then show confirmed
+    window.addEventListener('hashchange',()=>{});
+    setTimeout(()=>switchAuthTab('confirmed'),500);
+  }
+  if(params.get('reset')==='true'||hash.includes('type=recovery')){
+    showPasswordResetModal();
+  }
+})();
+
+function showPasswordResetModal(){
+  // Show reset password UI
+  show('modal-reset-password');
 }
 function toggleAdminCode(){
   el('admin-code-row').classList.toggle('hidden', el('reg-role').value!=='admin');
@@ -908,9 +1027,12 @@ async function doRegister(){
   const code     = el('reg-admin-code').value.trim();
   hide('reg-error'); hide('reg-success');
 
-  if(!name||!email||!pass){ showRegErr('Please fill in all fields.'); return; }
+  if(!name||!email||!pass){ showRegErr('Please fill in all required fields.'); return; }
   if(!username){ showRegErr('Please enter a username (letters, numbers, underscore only).'); return; }
   if(pass.length<6){ showRegErr('Password must be at least 6 characters.'); return; }
+  if(!phone){ showRegErr('Phone number is required.'); return; }
+  if(!acyear){ showRegErr('Academic year / Age is required.'); return; }
+  if(!/^[+\d\s()-]{7,20}$/.test(phone)){ showRegErr('Please enter a valid phone number.'); return; }
   if(role==='admin'&&code!==ADMIN_CODE){ showRegErr('Incorrect admin code.'); return; }
 
   setBtn('reg-btn',true,'');
@@ -940,15 +1062,24 @@ async function doRegister(){
       return;
     }
     setBtn('reg-btn',false,'<i class="ti ti-user-plus"></i> Create account');
+    // Always show email confirmation message regardless of auto-confirm setting
+    el('reg-success').innerHTML=
+      '<i class="ti ti-mail" style="font-size:18px;margin-right:6px;vertical-align:middle"></i>'+
+      '<strong>Account created!</strong> We sent a confirmation link to <strong>'+email+'</strong>. '+
+      'Click it to activate your account, then come back and sign in.';
+    show('reg-success');
+    // Clear sensitive fields
+    el('reg-name').value=''; el('reg-email').value='';
+    el('reg-pass').value=''; el('reg-admin-code').value='';
+    el('reg-phone').value=''; el('reg-year').value='';
+    el('reg-username').value='';
+    // If Supabase auto-confirmed (email confirm OFF), go straight in
     if(data.session){
-      session=data.session;
-      profile={id:data.user.id,name,username,phone,acyear,role};
-      renderScreen();
-    } else {
-      el('reg-success').textContent='Account created! Check your email and click the confirmation link, then sign in.';
-      show('reg-success');
-      el('reg-name').value=''; el('reg-email').value='';
-      el('reg-pass').value=''; el('reg-admin-code').value='';
+      setTimeout(()=>{
+        session=data.session;
+        profile={id:data.user.id,name,username,phone,acyear,role};
+        renderScreen();
+      },1500);
     }
   }catch(e){
     showRegErr('Connection error. Please try again.');
@@ -957,6 +1088,37 @@ async function doRegister(){
 }
 
 function showRegErr(msg){ el('reg-error').textContent=msg; show('reg-error'); }
+
+async function doResetPassword(){
+  const pass=el('reset-pass').value;
+  const confirm=el('reset-pass-confirm').value;
+  hide('reset-error'); hide('reset-success');
+  if(!pass||pass.length<6){ el('reset-error').textContent='Password must be at least 6 characters.'; show('reset-error'); return; }
+  if(pass!==confirm){ el('reset-error').textContent='Passwords do not match.'; show('reset-error'); return; }
+  setBtn('reset-btn',true,'');
+  try{
+    const{error}=await sb.auth.updateUser({password:pass});
+    setBtn('reset-btn',false,'<i class="ti ti-check"></i> Update password');
+    if(error){
+      el('reset-error').textContent=error.message;
+      show('reset-error');
+    } else {
+      el('reset-success').innerHTML='<i class="ti ti-circle-check" style="color:#4ade80;margin-right:6px"></i> Password updated! Signing you in...';
+      show('reset-success');
+      // Clean URL
+      window.history.replaceState({},'',window.location.pathname);
+      setTimeout(async()=>{
+        hide('modal-reset-password');
+        // Session already active after updateUser
+        await loadProfile();
+      },1500);
+    }
+  }catch(e){
+    setBtn('reset-btn',false,'<i class="ti ti-check"></i> Update password');
+    el('reset-error').textContent='Error: '+e.message;
+    show('reset-error');
+  }
+}
 async function doLogout(){ clearInterval(timerInterval); await sb.auth.signOut(); }
 
 // ── ADMIN TABS ──────────────────────────────────────────
